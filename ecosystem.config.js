@@ -2,8 +2,8 @@ module.exports = {
     apps: [
         {
             name: "scriptai-web",
-            script: "node_modules/.bin/next",
-            args: "start -p 6001",
+            script: "npm",
+            args: "run start -- -p 6001",
             cwd: "/var/www/project-scrape",
             env: {
                 NODE_ENV: "production",
@@ -18,8 +18,8 @@ module.exports = {
         },
         {
             name: "scriptai-worker",
-            script: "node_modules/.bin/tsx",
-            args: "src/lib/worker.ts",
+            script: "npm",
+            args: "run worker",
             cwd: "/var/www/project-scrape",
             env: {
                 NODE_ENV: "production",
