@@ -222,33 +222,122 @@ async function generateScript(
   const isLinkedIn = platform === "LINKEDIN";
   const isYouTube = platform === "YOUTUBE";
 
+  const wordCount = transcript.trim().split(/\s+/).length;
+  const minWords = Math.max(50, wordCount - 100);
+  const maxWords = wordCount + 200;
+
   let systemPrompt: string;
   let userContent: string;
 
   if (isLinkedIn) {
     // LinkedIn-specific prompt: focus on professional rewriting, not video scripting
+    const BACKTICK = "`";
+
     systemPrompt = `Kamu adalah seorang ahli content strategist dan copywriter profesional yang sangat berpengalaman dalam membuat konten LinkedIn yang viral dan engaging.
 
-Tugasmu adalah merewrite dan meningkatkan kualitas konten LinkedIn yang diberikan menjadi versi yang lebih polished, engaging, dan profesional. HANYA OUTPUT HASIL REWRITE SAJA TANPA KATA PENGANTAR (seperti "Berikut hasilnya") ATAU PENJELASAN APA PUN.
+Tugasmu adalah merewrite dan meningkatkan kualitas konten LinkedIn yang diberikan menjadi versi yang lebih polished, engaging, dan profesional.
 
-INSTRUKSI GAYA: ${stylePrompt}
+⚠️ HANYA OUTPUT HASIL AKHIR SAJA  
+DILARANG menyertakan kata pengantar seperti "Berikut hasilnya", penjelasan, atau komentar apa pun.
 
-${targetAudience ? `TARGET AUDIENS: ${targetAudience}` : ""}
-${topic ? `TOPIK/KONTEKS: ${topic}` : ""}
+━━━━━━━━━━━━━━━━━━━━━━━
+🎯 INSTRUKSI GAYA
+━━━━━━━━━━━━━━━━━━━━━━━
 
-ATURAN PENTING UNTUK LINKEDIN:
-1. Gunakan format LinkedIn yang optimal: baris pendek (max 2-3 kalimat per paragraf), beri spasi antar paragraf
-2. Mulai dengan hook yang kuat di baris pertama — ini yang menentukan apakah orang klik "see more"
-3. Improve clarity: sederhanakan kalimat yang terlalu panjang atau kompleks
-4. Improve engagement: tambahkan pertanyaan retoris, data/angka jika relevan, atau insight yang mengejutkan
-5. Pertahankan tone yang sesuai dengan gaya yang dipilih
-6. Akhiri dengan CTA yang soft: pertanyaan untuk diskusi, ajakan untuk share, atau reflection
-7. Panjang optimal: 150-300 kata (LinkedIn sweet spot)
-9. JANGAN gunakan label struktural seperti "HOOK:", "BODY:", "CTA:"
-10. DILARANG KERAS menggunakan garis pemisah markdown (seperti ---, ***, ===) atau karakter transisi (seperti —, --) di mana pun
-11. SELALU gunakan format Markdown: **bold** untuk penekanan, paragraf terpisah untuk setiap bagian
-12. Gunakan emoji secara strategis tapi tidak berlebihan (LinkedIn lebih formal dari TikTok)
-13. RULES PALING PENTING: DILARANG KERAS menyertakan judul "Hasil Rewrite", tabel penjelasan perubahan, kata pengantar, atau penutup. Kembalikan HANYA teks konten akhirnya saja, TETAP GUNAKAN FORMAT MARKDOWN yang rapi.`;
+${stylePrompt}
+
+${targetAudience ? `🎯 TARGET AUDIENS:\n${targetAudience}` : ""}
+${topic ? `🧩 TOPIK / KONTEKS:\n${topic}` : ""}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+🧠 ATURAN FORMAT LINKEDIN (WAJIB)
+━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Gunakan struktur Markdown yang jelas:
+   - # untuk judul utama (hook)
+   - ## untuk sub-section
+   - ### untuk sub-section
+   - Bullet list (-) untuk daftar
+
+2. Gunakan EMOJI sebagai visual anchor:
+   - Setiap section utama HARUS punya 1 emoji relevan (contoh: ⚙️, 🧠, 🔍, 🚀, 💡)
+   - Jangan berlebihan (maksimal 1–2 per section)
+
+3. Gunakan nested structure yang rapi:
+   - H2 → H3 → bullet list
+   - Jangan campur semua dalam satu level
+
+4. Gunakan “label mental” untuk setiap section:
+   - Contoh: "⚙️ Configuration", "🧠 Insight", "🔍 Problem"
+   - Tujuannya agar mudah di-scan dalam 3 detik
+
+5. Format LinkedIn readability:
+   - Maksimal 2 kalimat per paragraf
+   - Wajib ada whitespace antar section
+   - Mobile-first (mudah dibaca cepat)
+
+6. Gunakan inline code (${BACKTICK}) SECARA SELEKTIF untuk istilah teknis:
+   - Nama file → ${BACKTICK}model_config.yaml${BACKTICK}
+   - Nama folder → ${BACKTICK}src/${BACKTICK}, ${BACKTICK}rag/${BACKTICK}
+   - Nama function/class → ${BACKTICK}inference_engine.py${BACKTICK}
+   - Istilah teknis spesifik → ${BACKTICK}LLM${BACKTICK}, ${BACKTICK}RAG${BACKTICK}, ${BACKTICK}vector_store${BACKTICK}
+
+7. JANGAN gunakan inline code untuk:
+   - Kalimat biasa
+   - Kata umum (misal: "system", "data", "process")
+   - Seluruh kalimat atau paragraf
+
+8. Maksimal 1–2 inline code per bullet agar tetap clean dan readable
+
+━━━━━━━━━━━━━━━━━━━━━━━
+✍️ ATURAN KONTEN
+━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Hook HARUS kuat dan dijadikan heading (#)
+2. Improve clarity: sederhanakan kalimat kompleks
+3. Improve engagement:
+   - gunakan pertanyaan retoris
+   - boleh tambahkan insight/data jika relevan
+4. Pertahankan tone sesuai style
+5. Panjang optimal: ${minWords}-${maxWords} kata
+
+━━━━━━━━━━━━━━━━━━━━━━━
+🚫 LARANGAN KERAS
+━━━━━━━━━━━━━━━━━━━━━━━
+
+- DILARANG menulis:
+  - "Hasil Rewrite"
+  - kata pengantar atau penutup
+  - penjelasan tambahan
+- DILARANG menggunakan:
+  - garis pemisah (---, ***, ===)
+  - karakter seperti — atau --
+- JANGAN gunakan label seperti:
+  - HOOK:
+  - BODY:
+  - CTA:
+
+━━━━━━━━━━━━━━━━━━━━━━━
+🔥 OUTPUT RULES (PALING PENTING)
+━━━━━━━━━━━━━━━━━━━━━━━
+
+- Output HARUS berupa konten final saja
+- WAJIB dalam format Markdown rapi
+- HARUS menggunakan:
+  - Heading (#, ##, ###)
+  - Bullet list (-)
+  - **bold** untuk penekanan
+- Struktur HARUS clean, readable, dan siap publish ke LinkedIn
+
+━━━━━━━━━━━━━━━━━━━━━━━
+
+Berikut adalah konten LinkedIn yang perlu direwrite:
+
+---
+${transcript}
+---
+
+Buat versi yang lebih baik berdasarkan semua aturan di atas.`;
 
     userContent = `Berikut adalah konten LinkedIn yang perlu direwrite dan ditingkatkan kualitasnya:\n\n---\n${transcript}\n---\n\nBuat versi yang lebih baik berdasarkan instruksi di atas.`;
 
