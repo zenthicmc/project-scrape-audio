@@ -87,3 +87,8 @@
 - [x] FIX: Stepper garis horizontal tidak center/sejajar dengan lingkaran step
 - [x] FIX: Hapus tombol Edit, ganti dengan Tiptap editor inline langsung di halaman generate
 - [x] FIX: Tiptap harus parse dan render markdown dari output AI (##, **bold**, ---, dll)
+
+## UI Fix — Stepper & Editor Width (Round 13)
+
+- [ ] FIX: Stepper garis masih tidak center — garis melampaui tepi karena circle di ujung
+- [ ] FIX: Perlebar max-width halaman generate dan Tiptap editor untuk teks panjang

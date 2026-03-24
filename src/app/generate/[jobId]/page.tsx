@@ -212,7 +212,7 @@ function InlineTiptapEditor({
       {/* Editor content */}
       <EditorContent
         editor={editor}
-        className="prose prose-sm dark:prose-invert max-w-none px-6 py-5 min-h-[300px] focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[300px]"
+        className="prose prose-base dark:prose-invert max-w-none px-8 py-6 min-h-[400px] focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[400px]"
       />
     </div>
   );
@@ -423,7 +423,7 @@ export default function ProcessingPage() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {/* Page header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
@@ -459,61 +459,67 @@ export default function ProcessingPage() {
 
         {/* ─── Progress Stepper ──────────────────────────────────────────────── */}
         {(isActive || status === "completed") && (
-          <div className="mb-8 px-4">
-            {/* Stepper container — relative, so the line can be absolutely positioned */}
-            <div className="relative flex items-center justify-between">
-
-              {/* Background track line — sits at vertical center of the circles */}
+          <div className="mb-8">
+            {/*
+              Grid approach: 4 equal columns, each circle is centered in its column.
+              The connecting line spans from center of col-1 to center of col-4.
+              Using padding on the outer div so the line starts/ends at circle centers.
+            */}
+            <div className="relative">
+              {/* Track line: starts at center of first circle, ends at center of last circle */}
+              {/* Each column is 25% wide, circle is 40px centered → offset = 50% of 25% = 12.5% */}
               <div
-                className="absolute left-0 right-0 h-0.5 bg-border"
-                style={{ top: "20px" }}   /* half of w-10 (40px) circle */
+                className="absolute h-0.5 bg-border"
+                style={{ top: "20px", left: "12.5%", right: "12.5%" }}
               />
-
               {/* Filled progress line */}
               <div
-                className="absolute left-0 h-0.5 bg-primary transition-all duration-700"
+                className="absolute h-0.5 bg-primary transition-all duration-700"
                 style={{
                   top: "20px",
+                  left: "12.5%",
                   width: currentStepIndex === 0
                     ? "0%"
-                    : `calc(${(currentStepIndex / (STEPS.length - 1)) * 100}% - 0px)`,
+                    : `calc(${(currentStepIndex / (STEPS.length - 1)) * 75}%)`,
                 }}
               />
 
-              {/* Step circles */}
-              {STEPS.map((step, i) => {
-                const Icon = step.icon;
-                const isDone = i < currentStepIndex;
-                const isCurrent = i === currentStepIndex;
-                return (
-                  <div key={step.key} className="relative z-10 flex flex-col items-center gap-2">
-                    {/* Circle */}
-                    <div className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 bg-background",
-                      isDone
-                        ? "bg-primary border-primary text-white"
-                        : isCurrent
-                          ? "border-primary text-primary"
-                          : "border-border text-muted-foreground"
-                    )}>
-                      {isDone
-                        ? <Check className="w-4 h-4 text-white" />
-                        : isCurrent
-                          ? <Loader2 className="w-4 h-4 animate-spin" />
-                          : <Icon className="w-4 h-4" />
-                      }
-                    </div>
+              {/* Step circles — grid with 4 equal columns */}
+              <div className="grid grid-cols-4">
+                {STEPS.map((step, i) => {
+                  const Icon = step.icon;
+                  const isDone = i < currentStepIndex;
+                  const isCurrent = i === currentStepIndex;
+                  return (
+                    <div key={step.key} className="relative z-10 flex flex-col items-center gap-2">
+                      {/* Circle */}
+                      <div className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500",
+                        isDone
+                          ? "bg-primary border-primary text-white"
+                          : isCurrent
+                            ? "bg-background border-primary text-primary"
+                            : "bg-background border-border text-muted-foreground"
+                      )}>
+                        {isDone
+                          ? <Check className="w-4 h-4 text-white" />
+                          : isCurrent
+                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                            : <Icon className="w-4 h-4" />
+                        }
+                      </div>
 
-                    {/* Label — hidden on mobile */}
-                    <span className={cn(
-                      "text-xs font-medium text-center max-w-[80px] leading-tight hidden sm:block",
-                      isCurrent ? "text-primary" : isDone ? "text-foreground" : "text-muted-foreground"
-                    )}>
-                      {language === "id" ? step.labelId : step.labelEn}
-                    </span>
-                  </div>
-                );
-              })}
+                      {/* Label */}
+                      <span className={cn(
+                        "text-xs font-medium text-center max-w-[80px] leading-tight hidden sm:block",
+                        isCurrent ? "text-primary" : isDone ? "text-foreground" : "text-muted-foreground"
+                      )}>
+                        {language === "id" ? step.labelId : step.labelEn}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Mobile: show current step label below */}
