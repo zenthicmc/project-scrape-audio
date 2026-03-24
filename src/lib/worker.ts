@@ -40,6 +40,53 @@ const STYLE_PROMPTS: Record<string, string> = {
     "Gunakan format storytelling khas LinkedIn: mulai dengan momen personal atau pengalaman nyata yang relatable, bangun narasi yang emosional namun profesional, gunakan baris pendek dan spasi untuk readability, akhiri dengan lesson learned yang universal dan CTA untuk engage (like, comment, share).",
 };
 
+/**
+ * Scrape a LinkedIn post's text content using Apify's linkedin-post-scraper actor.
+ * Uses run-sync-get-dataset-items for synchronous execution (waits for result).
+ */
+async function scrapeLinkedInPost(postUrl: string): Promise<string> {
+  const apiToken = process.env.APIFY_API_TOKEN;
+  if (!apiToken) {
+    throw new Error("APIFY_API_TOKEN tidak dikonfigurasi. Hubungi admin untuk mengaktifkan fitur scraping URL LinkedIn.");
+  }
+
+  console.log(`[Worker] Scraping LinkedIn post via Apify: ${postUrl}`);
+
+  // Use run-sync-get-dataset-items for synchronous execution (timeout 120s)
+  const response = await fetch(
+    `https://api.apify.com/v2/acts/scrapio~linkedin-post-scraper/run-sync-get-dataset-items?token=${apiToken}&timeout=120`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        urls: [postUrl],
+        max_posts: 1,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => "");
+    console.error(`[Worker] Apify LinkedIn scraper error: ${response.status}`, errText.substring(0, 300));
+    throw new Error(`Gagal scraping LinkedIn post (${response.status}). Pastikan URL valid dan post bersifat publik.`);
+  }
+
+  const items: Array<{ text?: string; content?: string }> = await response.json();
+  console.log(`[Worker] Apify LinkedIn scraper returned ${items.length} item(s)`);
+
+  if (!items || items.length === 0) {
+    throw new Error("Tidak ada data yang ditemukan dari URL LinkedIn tersebut. Pastikan post bersifat publik dan URL valid.");
+  }
+
+  const postText = items[0]?.text || items[0]?.content || "";
+  if (!postText || postText.trim().length < 10) {
+    throw new Error("Konten post LinkedIn kosong atau terlalu pendek. Pastikan post memiliki teks yang cukup.");
+  }
+
+  console.log(`[Worker] LinkedIn post text extracted (${postText.length} chars): ${postText.substring(0, 100)}...`);
+  return postText.trim();
+}
+
 async function transcribeVideo(videoUrl: string): Promise<string> {
   console.log(`[Worker] Calling transcription API for: ${videoUrl}`);
 
@@ -315,8 +362,22 @@ async function processJob(job: Job<ScriptJobData>) {
         where: { id: jobId },
         data: { transcript },
       });
+    } else if (platform === "LINKEDIN" && videoUrl && videoUrl.trim().length > 0) {
+      // LinkedIn with URL — scrape post text via Apify
+      await job.updateProgress(20);
+      console.log(`[Worker] LinkedIn URL mode: scraping post via Apify: ${videoUrl}`);
+      transcript = await scrapeLinkedInPost(videoUrl);
+
+      if (!transcript || transcript.trim().length < 10) {
+        throw new Error("Konten post LinkedIn kosong. Pastikan URL valid dan post bersifat publik.");
+      }
+
+      await prisma.scriptJob.update({
+        where: { id: jobId },
+        data: { transcript },
+      });
     } else {
-      // Video platforms (Instagram, TikTok, YouTube) or LinkedIn with URL
+      // Video platforms (Instagram, TikTok, YouTube)
       await job.updateProgress(20);
       console.log(`[Worker] Transcribing video: ${videoUrl}`);
       transcript = await transcribeVideo(videoUrl);

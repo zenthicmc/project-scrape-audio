@@ -212,11 +212,21 @@ export default function LinkedInForm({ credits }: LinkedInFormProps) {
                 placeholder="https://www.linkedin.com/posts/username_..."
                 className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground text-foreground transition-all"
               />
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span className="font-medium">{language === "id" ? "Contoh:" : "Example:"}</span>
-                <code className="bg-secondary px-2 py-0.5 rounded text-primary/80">
-                  https://www.linkedin.com/posts/username_...
-                </code>
+              <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-medium">{language === "id" ? "Contoh:" : "Example:"}</span>
+                  <code className="bg-secondary px-2 py-0.5 rounded text-primary/80 truncate">
+                    https://www.linkedin.com/posts/username_...
+                  </code>
+                </div>
+                <div className="flex items-start gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg px-3 py-2">
+                  <span className="text-blue-400 mt-0.5">⚡</span>
+                  <span className="text-blue-400/90 leading-relaxed">
+                    {language === "id"
+                      ? "Konten post akan otomatis di-scrape menggunakan Apify. Pastikan post bersifat publik."
+                      : "Post content will be automatically scraped via Apify. Make sure the post is public."}
+                  </span>
+                </div>
               </div>
             </div>
           )}
