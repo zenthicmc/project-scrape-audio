@@ -73,3 +73,7 @@
 ## Bug Fix — Transcription API Format (Round 9)
 
 - [x] FIX: Sesuaikan transcribeVideo() dengan format SSE API yang sebenarnya (event: progress, transcript, done)
+
+## Bug Fix — SSE Event Name (Round 10)
+
+- [ ] FIX: Tambah handler event 'status' di transcribeVideo() — nama event API mungkin 'status' bukan 'progress'

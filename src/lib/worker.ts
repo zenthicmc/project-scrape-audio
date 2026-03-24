@@ -129,9 +129,9 @@ async function transcribeVideo(videoUrl: string): Promise<string> {
               }
             }
 
-          } else if (currentEventType === "progress") {
-            // Progress update — just log it
-            console.log(`[Worker] SSE progress: step ${parsed.step}/${parsed.total_steps} (${parsed.progress_pct}%) — ${parsed.stage}: ${parsed.message}`);
+          } else if (currentEventType === "progress" || currentEventType === "status") {
+            // Progress/status update — just log it (API may use either name)
+            console.log(`[Worker] SSE ${currentEventType}: step ${parsed.step}/${parsed.total_steps} (${parsed.progress_pct}%) — ${parsed.stage}: ${parsed.message}`);
           }
         } catch (parseErr) {
           console.warn(`[Worker] SSE event="${currentEventType}" failed to parse JSON data:`, parseErr);
