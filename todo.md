@@ -76,4 +76,8 @@
 
 ## Bug Fix — SSE Event Name (Round 10)
 
-- [ ] FIX: Tambah handler event 'status' di transcribeVideo() — nama event API mungkin 'status' bukan 'progress'
+- [x] FIX: Tambah handler event 'status' di transcribeVideo() — nama event API mungkin 'status' bukan 'progress'
+
+## Bug Fix — Claude Model (Round 11)
+
+- [x] FIX: Ganti model claude-3-5-sonnet-20241022 ke claude-haiku-4-5
