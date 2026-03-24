@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { Worker, Job } from "bullmq";
 import Anthropic from "@anthropic-ai/sdk";
+import { ApifyClient } from "apify-client";
 import { prisma } from "./prisma";
 import { QUEUE_NAME, ScriptJobData } from "./queue";
 
@@ -41,8 +42,9 @@ const STYLE_PROMPTS: Record<string, string> = {
 };
 
 /**
- * Scrape a LinkedIn post's text content using Apify's linkedin-post-scraper actor.
- * Uses run-sync-get-dataset-items for synchronous execution (waits for result).
+ * Scrape a LinkedIn post's text content using Apify SDK.
+ * Actor: Wpp1BZ6yGWjySadk3 (LinkedIn post scraper)
+ * Requires APIFY_API_TOKEN env variable.
  */
 async function scrapeLinkedInPost(postUrl: string): Promise<string> {
   const apiToken = process.env.APIFY_API_TOKEN;
@@ -50,36 +52,39 @@ async function scrapeLinkedInPost(postUrl: string): Promise<string> {
     throw new Error("APIFY_API_TOKEN tidak dikonfigurasi. Hubungi admin untuk mengaktifkan fitur scraping URL LinkedIn.");
   }
 
-  console.log(`[Worker] Scraping LinkedIn post via Apify: ${postUrl}`);
+  console.log(`[Worker] Scraping LinkedIn post via Apify SDK: ${postUrl}`);
 
-  // Use run-sync-get-dataset-items for synchronous execution (timeout 120s)
-  const response = await fetch(
-    `https://api.apify.com/v2/acts/scrapio~linkedin-post-scraper/run-sync-get-dataset-items?token=${apiToken}&timeout=120`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        urls: [postUrl],
-        max_posts: 1,
-      }),
-    }
-  );
+  const client = new ApifyClient({ token: apiToken });
 
-  if (!response.ok) {
-    const errText = await response.text().catch(() => "");
-    console.error(`[Worker] Apify LinkedIn scraper error: ${response.status}`, errText.substring(0, 300));
-    throw new Error(`Gagal scraping LinkedIn post (${response.status}). Pastikan URL valid dan post bersifat publik.`);
+  // Run the actor and wait for it to finish
+  const run = await client.actor("Wpp1BZ6yGWjySadk3").call({
+    urls: [postUrl],
+    limitPerSource: 1,
+    deepScrape: true,
+    rawData: false,
+  });
+
+  console.log(`[Worker] Apify run finished: ${run.id}, status: ${run.status}`);
+
+  if (run.status !== "SUCCEEDED") {
+    throw new Error(`Apify actor gagal dengan status: ${run.status}. Pastikan URL LinkedIn valid dan post bersifat publik.`);
   }
 
-  const items: Array<{ text?: string; content?: string }> = await response.json();
+  // Fetch results from the run's dataset
+  const { items } = await client.dataset(run.defaultDatasetId).listItems();
   console.log(`[Worker] Apify LinkedIn scraper returned ${items.length} item(s)`);
 
   if (!items || items.length === 0) {
     throw new Error("Tidak ada data yang ditemukan dari URL LinkedIn tersebut. Pastikan post bersifat publik dan URL valid.");
   }
 
-  const postText = items[0]?.text || items[0]?.content || "";
+  // Extract post text — try common field names
+  const item = items[0] as Record<string, unknown>;
+  const postText = (item.text || item.content || item.description || item.postText || "") as string;
+
   if (!postText || postText.trim().length < 10) {
+    console.error(`[Worker] Apify item keys: ${Object.keys(item).join(", ")}`);
+    console.error(`[Worker] Apify item preview: ${JSON.stringify(item).substring(0, 500)}`);
     throw new Error("Konten post LinkedIn kosong atau terlalu pendek. Pastikan post memiliki teks yang cukup.");
   }
 
