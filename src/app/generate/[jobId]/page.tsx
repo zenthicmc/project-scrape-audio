@@ -14,7 +14,12 @@ import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Link2 from "@tiptap/extension-link";
 import { marked } from "marked";
-import { Bold, Italic, Underline as UnderlineIcon, AlignLeft, AlignCenter, AlignRight, List, ListOrdered, Heading1, Heading2, Heading3, Undo, Redo } from "lucide-react";
+import {
+  Bold, Italic, Underline as UnderlineIcon,
+  AlignLeft, AlignCenter, AlignRight,
+  List, ListOrdered, Heading1, Heading2, Heading3,
+  Undo, Redo
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -38,10 +43,10 @@ interface JobMeta {
 // ─── Progress steps config ────────────────────────────────────────────────────
 
 const STEPS = [
-  { key: "fetching",    icon: Zap,         labelId: "Mengambil transkrip video...", labelEn: "Fetching transcript..." },
-  { key: "processing",  icon: Brain,        labelId: "Memproses dengan AI...",       labelEn: "Processing with AI..." },
-  { key: "streaming",   icon: Sparkles,     labelId: "Menulis script...",            labelEn: "Writing script..." },
-  { key: "completed",   icon: CheckCircle,  labelId: "Selesai!",                     labelEn: "Done!" },
+  { key: "fetching",   icon: Zap,         labelId: "Mengambil transkrip video...", labelEn: "Fetching transcript..." },
+  { key: "processing", icon: Brain,        labelId: "Memproses dengan AI...",       labelEn: "Processing with AI..." },
+  { key: "streaming",  icon: Sparkles,     labelId: "Menulis script...",            labelEn: "Writing script..." },
+  { key: "completed",  icon: CheckCircle,  labelId: "Selesai!",                     labelEn: "Done!" },
 ];
 
 function getStepIndex(status: ProcessingStatus): number {
@@ -71,7 +76,6 @@ function SkeletonLines({ count = 8 }: { count?: number }) {
 // ─── Convert markdown to HTML ─────────────────────────────────────────────────
 
 function markdownToHtml(markdown: string): string {
-  // Configure marked for clean output
   marked.setOptions({ breaks: true, gfm: true });
   const result = marked.parse(markdown);
   return typeof result === "string" ? result : "";
@@ -80,23 +84,28 @@ function markdownToHtml(markdown: string): string {
 // ─── Tiptap toolbar button ────────────────────────────────────────────────────
 
 function ToolbarButton({
-  onClick, active, title, children,
+  onClick, active, title, children, disabled,
 }: {
   onClick: () => void;
   active?: boolean;
   title: string;
   children: React.ReactNode;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       title={title}
+      disabled={disabled}
       className={cn(
         "p-1.5 rounded-lg transition-colors",
-        active
+        disabled && "opacity-30 cursor-not-allowed",
+        !disabled && active
           ? "bg-primary text-white"
-          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+          : !disabled
+            ? "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            : ""
       )}
     >
       {children}
@@ -104,109 +113,180 @@ function ToolbarButton({
   );
 }
 
-// ─── Tiptap editor (inline, with toolbar) ────────────────────────────────────
+// ─── Inline Tiptap Editor ─────────────────────────────────────────────────────
 
 function InlineTiptapEditor({
   htmlContent,
   onCopy,
   copied,
   language,
+  isEditable,
 }: {
   htmlContent: string;
   onCopy: () => void;
   copied: boolean;
   language: string;
+  isEditable: boolean;
 }) {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
+      StarterKit,
       Underline,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Link2.configure({ openOnClick: false }),
     ],
     content: htmlContent,
-    editable: true,
-    immediatelyRender: false,
+    editable: isEditable,
+    editorProps: {
+      attributes: {
+        class: "outline-none min-h-[400px]",
+      },
+    },
   });
 
-  // Update editor content when htmlContent changes (after streaming completes)
+  // Update content when htmlContent changes (streaming chunks)
   useEffect(() => {
-    if (editor && htmlContent && editor.isEmpty) {
-      editor.commands.setContent(htmlContent);
+    if (!editor) return;
+    const currentHtml = editor.getHTML();
+    if (currentHtml !== htmlContent && htmlContent) {
+      editor.commands.setContent(htmlContent, false);
     }
-  }, [editor, htmlContent]);
+  }, [htmlContent, editor]);
+
+  // Toggle editable when isEditable changes
+  useEffect(() => {
+    if (!editor) return;
+    editor.setEditable(isEditable);
+  }, [isEditable, editor]);
 
   if (!editor) return null;
 
   return (
-    <div className="tiptap-editor">
+    <div>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-0.5 px-3 py-2 border-b border-border bg-secondary/20">
-        <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold">
+      <div className={cn(
+        "flex flex-wrap items-center gap-1 px-4 py-2 border-b border-border bg-secondary/30 transition-opacity",
+        !isEditable && "opacity-50"
+      )}>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          active={editor.isActive("bold")}
+          title="Bold"
+          disabled={!isEditable}
+        >
           <Bold className="w-3.5 h-3.5" />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Italic">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          active={editor.isActive("italic")}
+          title="Italic"
+          disabled={!isEditable}
+        >
           <Italic className="w-3.5 h-3.5" />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Underline">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          active={editor.isActive("underline")}
+          title="Underline"
+          disabled={!isEditable}
+        >
           <UnderlineIcon className="w-3.5 h-3.5" />
         </ToolbarButton>
-
-        <div className="w-px h-4 bg-border mx-1" />
-
-        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive("heading", { level: 1 })} title="H1">
+        <div className="w-px h-5 bg-border mx-1" />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          active={editor.isActive("heading", { level: 1 })}
+          title="Heading 1"
+          disabled={!isEditable}
+        >
           <Heading1 className="w-3.5 h-3.5" />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} title="H2">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          active={editor.isActive("heading", { level: 2 })}
+          title="Heading 2"
+          disabled={!isEditable}
+        >
           <Heading2 className="w-3.5 h-3.5" />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive("heading", { level: 3 })} title="H3">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          active={editor.isActive("heading", { level: 3 })}
+          title="Heading 3"
+          disabled={!isEditable}
+        >
           <Heading3 className="w-3.5 h-3.5" />
         </ToolbarButton>
-
-        <div className="w-px h-4 bg-border mx-1" />
-
-        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} title="Align Left">
+        <div className="w-px h-5 bg-border mx-1" />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("left").run()}
+          active={editor.isActive({ textAlign: "left" })}
+          title="Align Left"
+          disabled={!isEditable}
+        >
           <AlignLeft className="w-3.5 h-3.5" />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} title="Align Center">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("center").run()}
+          active={editor.isActive({ textAlign: "center" })}
+          title="Align Center"
+          disabled={!isEditable}
+        >
           <AlignCenter className="w-3.5 h-3.5" />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title="Align Right">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("right").run()}
+          active={editor.isActive({ textAlign: "right" })}
+          title="Align Right"
+          disabled={!isEditable}
+        >
           <AlignRight className="w-3.5 h-3.5" />
         </ToolbarButton>
-
-        <div className="w-px h-4 bg-border mx-1" />
-
-        <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Bullet List">
+        <div className="w-px h-5 bg-border mx-1" />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          active={editor.isActive("bulletList")}
+          title="Bullet List"
+          disabled={!isEditable}
+        >
           <List className="w-3.5 h-3.5" />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Ordered List">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          active={editor.isActive("orderedList")}
+          title="Ordered List"
+          disabled={!isEditable}
+        >
           <ListOrdered className="w-3.5 h-3.5" />
         </ToolbarButton>
-
-        <div className="w-px h-4 bg-border mx-1" />
-
-        <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="Undo">
+        <div className="w-px h-5 bg-border mx-1" />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().undo().run()}
+          title="Undo"
+          disabled={!isEditable}
+        >
           <Undo className="w-3.5 h-3.5" />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().redo().run()} title="Redo">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().redo().run()}
+          title="Redo"
+          disabled={!isEditable}
+        >
           <Redo className="w-3.5 h-3.5" />
         </ToolbarButton>
 
-        <div className="flex-1" />
-
-        {/* Copy button in toolbar */}
-        <button
-          type="button"
-          onClick={onCopy}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-xs font-medium transition-colors"
-        >
-          {copied
-            ? <><Check className="w-3 h-3 text-green-500" /> {language === "id" ? "Tersalin!" : "Copied!"}</>
-            : <><Copy className="w-3 h-3" /> {language === "id" ? "Copy" : "Copy"}</>
-          }
-        </button>
+        {/* Copy button on the right */}
+        <div className="ml-auto">
+          <button
+            onClick={onCopy}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-border rounded-lg hover:bg-secondary transition-colors"
+          >
+            {copied
+              ? <><Check className="w-3.5 h-3.5 text-green-500" /> {language === "id" ? "Tersalin!" : "Copied!"}</>
+              : <><Copy className="w-3.5 h-3.5" /> {language === "id" ? "Salin" : "Copy"}</>
+            }
+          </button>
+        </div>
       </div>
 
       {/* Editor content */}
@@ -228,6 +308,7 @@ export default function ProcessingPage() {
   const [status, setStatus] = useState<ProcessingStatus>("idle");
   const [streamedText, setStreamedText] = useState("");
   const [finalScript, setFinalScript] = useState("");
+  const [tiptapHtml, setTiptapHtml] = useState("");
   const [jobMeta, setJobMeta] = useState<JobMeta>({});
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -241,7 +322,7 @@ export default function ProcessingPage() {
     if (outputRef.current && status === "streaming") {
       outputRef.current.scrollTop = outputRef.current.scrollHeight;
     }
-  }, [streamedText, status]);
+  }, [tiptapHtml, status]);
 
   const startStream = useCallback(() => {
     if (eventSourceRef.current) {
@@ -251,6 +332,7 @@ export default function ProcessingPage() {
     setStatus("fetching");
     setStreamedText("");
     setFinalScript("");
+    setTiptapHtml("");
     setError("");
 
     const es = new EventSource(`/api/generate/${jobId}/stream`);
@@ -283,6 +365,7 @@ export default function ProcessingPage() {
       });
       if (s === "PENDING") setStatus("fetching");
       else if (s === "PROCESSING") setStatus("processing");
+      // COMPLETED status from DB → streaming will start via streaming_start event
     });
 
     es.addEventListener("streaming_start", () => {
@@ -292,7 +375,14 @@ export default function ProcessingPage() {
     es.addEventListener("chunk", (e) => {
       const data = safeParse("chunk", e.data);
       if (!data) return;
-      setStreamedText(prev => prev + (data.text as string));
+      const chunkText = data.text as string;
+      setStreamedText(prev => {
+        const newText = prev + chunkText;
+        // Convert accumulated markdown to HTML for Tiptap in real-time
+        const html = markdownToHtml(newText);
+        setTiptapHtml(html);
+        return newText;
+      });
     });
 
     es.addEventListener("completed", (e) => {
@@ -303,8 +393,11 @@ export default function ProcessingPage() {
         es.close();
         return;
       }
-      setFinalScript(data.script as string);
-      setStreamedText(data.script as string);
+      const script = data.script as string;
+      setFinalScript(script);
+      setStreamedText(script);
+      const html = markdownToHtml(script);
+      setTiptapHtml(html);
       setStatus("completed");
       es.close();
     });
@@ -348,7 +441,6 @@ export default function ProcessingPage() {
   const handleCopy = async () => {
     const text = finalScript || streamedText;
     if (!text) return;
-    // Strip markdown syntax for plain text copy
     const plain = text
       .replace(/#{1,6}\s+/g, "")
       .replace(/\*\*(.+?)\*\*/g, "$1")
@@ -381,18 +473,14 @@ export default function ProcessingPage() {
 
   const currentStepIndex = getStepIndex(status);
   const isActive = status !== "completed" && status !== "failed" && status !== "timeout";
-  const hasOutput = streamedText.length > 0;
+  const hasOutput = tiptapHtml.length > 0;
   const platformLabel = jobMeta.platform === "INSTAGRAM" ? "Instagram" : jobMeta.platform === "TIKTOK" ? "TikTok" : "";
-
-  // Convert markdown to HTML for Tiptap (only when completed)
-  const tiptapHtml = status === "completed" && finalScript
-    ? markdownToHtml(finalScript)
-    : "";
+  const isEditable = status === "completed";
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top nav bar */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-border px-4 sm:px-6 h-14 flex items-center justify-between">
+      {/* Top nav bar — z-50 so it always stays above everything when scrolling */}
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border px-4 sm:px-6 h-14 flex items-center justify-between">
         <Link
           href="/dashboard"
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -423,36 +511,39 @@ export default function ProcessingPage() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      {/* Main content — z-0 so it scrolls under the sticky header */}
+      <div className="relative z-0 max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {/* Page header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             {status === "completed"
               ? <CheckCircle className="w-8 h-8 text-green-500" />
-              : status === "failed" || status === "timeout"
+              : (status === "failed" || status === "timeout")
                 ? <XCircle className="w-8 h-8 text-destructive" />
-                : <Sparkles className="w-8 h-8 text-primary animate-pulse" />
+                : <Loader2 className="w-8 h-8 text-primary animate-spin" />
             }
           </div>
           <h1 className="text-2xl font-bold mb-2">
             {status === "completed"
               ? (language === "id" ? "Script Siap! 🎉" : "Script Ready! 🎉")
-              : status === "failed" || status === "timeout"
+              : (status === "failed" || status === "timeout")
                 ? (language === "id" ? "Proses Gagal" : "Process Failed")
-                : (language === "id" ? "Generating Your Script..." : "Generating Your Script...")}
+                : (language === "id" ? "Membuat Script..." : "Generating Script...")
+            }
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             {status === "completed"
               ? (language === "id" ? "Script Anda sudah siap. Edit atau copy di bawah." : "Your script is ready. Edit or copy below.")
-              : status === "failed" || status === "timeout"
-                ? (language === "id" ? "Terjadi kesalahan saat memproses video Anda." : "An error occurred while processing your video.")
-                : (language === "id" ? "AI sedang memproses video kamu — hasilnya akan muncul di bawah" : "AI is processing your video — results will appear below")}
+              : (status === "failed" || status === "timeout")
+                ? (language === "id" ? "Terjadi kesalahan saat memproses." : "An error occurred during processing.")
+                : (language === "id" ? "Mohon tunggu, AI sedang bekerja..." : "Please wait, AI is working...")
+            }
           </p>
-          {platformLabel && (
-            <div className="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              <span className="px-2 py-1 bg-secondary rounded-md">{platformLabel}</span>
-              {jobMeta.style && <span className="px-2 py-1 bg-secondary rounded-md">{jobMeta.style.replace(/_/g, " ")}</span>}
-              {jobMeta.topic && <span className="px-2 py-1 bg-secondary rounded-md truncate max-w-40">{jobMeta.topic}</span>}
+          {(jobMeta.platform || jobMeta.style) && (
+            <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+              {jobMeta.platform && <span className="px-2 py-1 bg-secondary rounded-md text-xs">{platformLabel}</span>}
+              {jobMeta.style && <span className="px-2 py-1 bg-secondary rounded-md text-xs">{jobMeta.style.replace(/_/g, " ")}</span>}
+              {jobMeta.topic && <span className="px-2 py-1 bg-secondary rounded-md text-xs truncate max-w-40">{jobMeta.topic}</span>}
             </div>
           )}
         </div>
@@ -460,14 +551,8 @@ export default function ProcessingPage() {
         {/* ─── Progress Stepper ──────────────────────────────────────────────── */}
         {(isActive || status === "completed") && (
           <div className="mb-8">
-            {/*
-              Grid approach: 4 equal columns, each circle is centered in its column.
-              The connecting line spans from center of col-1 to center of col-4.
-              Using padding on the outer div so the line starts/ends at circle centers.
-            */}
             <div className="relative">
-              {/* Track line: starts at center of first circle, ends at center of last circle */}
-              {/* Each column is 25% wide, circle is 40px centered → offset = 50% of 25% = 12.5% */}
+              {/* Track line: left/right offset = 50% of one column (25%/2 = 12.5%) */}
               <div
                 className="absolute h-0.5 bg-border"
                 style={{ top: "20px", left: "12.5%", right: "12.5%" }}
@@ -492,7 +577,6 @@ export default function ProcessingPage() {
                   const isCurrent = i === currentStepIndex;
                   return (
                     <div key={step.key} className="relative z-10 flex flex-col items-center gap-2">
-                      {/* Circle */}
                       <div className={cn(
                         "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500",
                         isDone
@@ -508,8 +592,6 @@ export default function ProcessingPage() {
                             : <Icon className="w-4 h-4" />
                         }
                       </div>
-
-                      {/* Label */}
                       <span className={cn(
                         "text-xs font-medium text-center max-w-[80px] leading-tight hidden sm:block",
                         isCurrent ? "text-primary" : isDone ? "text-foreground" : "text-muted-foreground"
@@ -562,40 +644,35 @@ export default function ProcessingPage() {
                 {language === "id" ? "Hasil Script" : "Generated Script"}
               </span>
               {status === "streaming" && (
-                <span className="flex items-center gap-1 text-xs text-primary">
+                <span className="flex items-center gap-1 text-xs text-primary ml-1">
                   <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                   <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
                   <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                 </span>
               )}
             </div>
+            {isEditable && (
+              <span className="text-xs text-muted-foreground">
+                {language === "id" ? "✏️ Klik untuk edit" : "✏️ Click to edit"}
+              </span>
+            )}
           </div>
 
           {/* Output content */}
-          <div ref={outputRef} className="min-h-[300px] max-h-[70vh] overflow-y-auto">
+          <div ref={outputRef} className="min-h-[300px] max-h-[80vh] overflow-y-auto">
             {!hasOutput && isActive ? (
-              // Skeleton loading while waiting
+              // Skeleton loading while waiting for first chunk
               <SkeletonLines count={10} />
 
-            ) : status === "completed" && tiptapHtml ? (
-              // Completed — render in Tiptap editor with full toolbar
+            ) : hasOutput ? (
+              // Tiptap editor — shown during streaming (read-only) and completed (editable)
               <InlineTiptapEditor
                 htmlContent={tiptapHtml}
                 onCopy={handleCopy}
                 copied={copied}
                 language={language}
+                isEditable={isEditable}
               />
-
-            ) : hasOutput ? (
-              // Streaming — plain text with cursor blink
-              <div className="p-6">
-                <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground">
-                  {streamedText}
-                  {status === "streaming" && (
-                    <span className="inline-block w-0.5 h-4 bg-primary ml-0.5 animate-pulse align-middle" />
-                  )}
-                </pre>
-              </div>
 
             ) : (status === "failed" || status === "timeout") ? (
               <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">

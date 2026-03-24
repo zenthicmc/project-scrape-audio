@@ -137,8 +137,12 @@ export async function GET(
               completedAt: job.completedAt,
             });
 
-            controller.close();
-            closed = true;
+            // Wait 500ms to ensure client receives the completed event before closing
+            await new Promise(r => setTimeout(r, 500));
+            if (!closed) {
+              controller.close();
+              closed = true;
+            }
             return;
           }
 
