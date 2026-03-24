@@ -53,7 +53,7 @@ export default function JobDetailPage() {
           setEditedScript(data.job.generatedScript);
         }
       }
-    } catch {}
+    } catch { }
     setLoading(false);
   }, [jobId, editedScript]);
 
@@ -80,7 +80,7 @@ export default function JobDetailPage() {
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       }
-    } catch {}
+    } catch { }
     setSaving(false);
   };
 

@@ -194,11 +194,13 @@ ATURAN PENTING:
 1. Gunakan bahasa Indonesia yang natural dan conversational
 2. Pertahankan informasi dan fakta penting dari transkrip asli
 3. Tambahkan hook yang kuat di awal
-4. Struktur script dengan jelas (hook, body, CTA)
+4. Struktur script mengalir natural: pembuka yang menarik, isi yang informatif, penutup dengan ajakan
 5. Gunakan emoji secara strategis untuk meningkatkan engagement
 6. Panjang script: 150-400 kata
-7. Format output dengan bagian yang jelas (HOOK, BODY, CTA)
-8. SELALU gunakan format Markdown untuk output: gunakan ## untuk heading, **bold** untuk penekanan, - untuk bullet list, dan paragraf terpisah untuk setiap bagian`;
+7. JANGAN gunakan label bagian seperti "HOOK:", "BODY:", "CTA:", atau label struktural lainnya
+8. JANGAN gunakan garis pemisah atau karakter transisi seperti ---, --, ===, —, atau karakter pemisah lainnya di dalam kalimat maupun antar paragraf
+9. SELALU gunakan format Markdown untuk output: gunakan ## untuk heading, **bold** untuk penekanan, - untuk bullet list, dan paragraf terpisah untuk setiap bagian
+10. Script harus mengalir natural tanpa penanda struktural yang terlihat oleh pembaca`;
 
   const message = await anthropic.messages.create({
     model: "claude-haiku-4-5",
