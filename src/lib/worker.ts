@@ -3,7 +3,7 @@ import { Worker, Job } from "bullmq";
 import Anthropic from "@anthropic-ai/sdk";
 import { ApifyClient } from "apify-client";
 import { prisma } from "./prisma";
-import { QUEUE_NAME, ScriptJobData } from "./queue";
+import { QUEUE_NAMES, ScriptJobData, redisConnection as queueRedisConnection } from "./queue";
 
 const workerConnection = {
   url: process.env.REDIS_URL || "redis://localhost:6379",
@@ -509,27 +509,50 @@ async function processJob(job: Job<ScriptJobData>) {
   }
 }
 
-// Export startWorker for programmatic use
+// ─── Multi-queue worker setup ────────────────────────────────────────────────
+// Each platform gets its own Worker instance with high concurrency.
+// This ensures LinkedIn (Apify, slow) never blocks Instagram/TikTok/YouTube jobs.
+//
+// Concurrency per worker:
+// - INSTAGRAM / TIKTOK / YOUTUBE: 10 parallel jobs each (fast transcription)
+// - LINKEDIN: 5 parallel jobs (slower due to Apify scraping)
+
+const PLATFORM_CONCURRENCY: Record<string, number> = {
+  INSTAGRAM: 10,
+  TIKTOK: 10,
+  YOUTUBE: 10,
+  LINKEDIN: 5,
+};
+
 export function startWorker() {
-  const worker = new Worker<ScriptJobData>(QUEUE_NAME, processJob, {
-    connection: workerConnection,
-    concurrency: 3,
-  });
+  const workers: Worker[] = [];
 
-  worker.on("completed", (job) => {
-    console.log(`[Worker] Job ${job.id} completed`);
-  });
+  for (const [platform, queueName] of Object.entries(QUEUE_NAMES)) {
+    const concurrency = PLATFORM_CONCURRENCY[platform] ?? 5;
 
-  worker.on("failed", (job, err) => {
-    console.error(`[Worker] Job ${job?.id} failed:`, err.message);
-  });
+    const worker = new Worker<ScriptJobData>(queueName, processJob, {
+      connection: workerConnection,
+      concurrency,
+    });
 
-  worker.on("error", (err) => {
-    console.error("[Worker] Worker error:", err);
-  });
+    worker.on("completed", (job) => {
+      console.log(`[Worker:${platform}] Job ${job.id} completed`);
+    });
 
-  console.log("[Worker] Script generation worker started");
-  return worker;
+    worker.on("failed", (job, err) => {
+      console.error(`[Worker:${platform}] Job ${job?.id} failed:`, err.message);
+    });
+
+    worker.on("error", (err) => {
+      console.error(`[Worker:${platform}] Worker error:`, err);
+    });
+
+    console.log(`[Worker:${platform}] Started — queue: ${queueName}, concurrency: ${concurrency}`);
+    workers.push(worker);
+  }
+
+  console.log(`[Worker] All ${workers.length} platform workers started`);
+  return workers;
 }
 
 // Auto-start when run directly (not imported)
