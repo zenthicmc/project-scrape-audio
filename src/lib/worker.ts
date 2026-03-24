@@ -244,7 +244,7 @@ DILARANG menyertakan kata pengantar seperti "Berikut hasilnya", penjelasan, atau
 🎯 INSTRUKSI GAYA
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-${stylePrompt}
+GUNAKAN GAYA BAHASA/PENULISAN: ${stylePrompt}
 
 ${targetAudience ? `🎯 TARGET AUDIENS:\n${targetAudience}` : ""}
 ${topic ? `🧩 TOPIK / KONTEKS:\n${topic}` : ""}
@@ -264,7 +264,7 @@ ${topic ? `🧩 TOPIK / KONTEKS:\n${topic}` : ""}
    - Jangan berlebihan (maksimal 1–2 per section)
 
 3. Gunakan nested structure yang rapi:
-   - H2 → H3 → bullet list
+   - H1 → H2 → H3 → bullet list
    - Jangan campur semua dalam satu level
 
 4. Gunakan “label mental” untuk setiap section:
@@ -298,7 +298,7 @@ ${topic ? `🧩 TOPIK / KONTEKS:\n${topic}` : ""}
 3. Improve engagement:
    - gunakan pertanyaan retoris
    - boleh tambahkan insight/data jika relevan
-4. Pertahankan tone sesuai style
+4. Pertahankan tone sesuai style ${stylePrompt}
 5. Panjang optimal: ${minWords}-${maxWords} kata
 
 ━━━━━━━━━━━━━━━━━━━━━━━
