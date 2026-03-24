@@ -90,5 +90,28 @@
 
 ## UI Fix — Stepper & Editor Width (Round 13)
 
-- [ ] FIX: Stepper garis masih tidak center — garis melampaui tepi karena circle di ujung
-- [ ] FIX: Perlebar max-width halaman generate dan Tiptap editor untuk teks panjang
+- [x] FIX: Stepper garis masih tidak center — garis melampaui tepi karena circle di ujung
+- [x] FIX: Perlebar max-width halaman generate dan Tiptap editor untuk teks panjang
+
+## Bug Fix — Generate Page (Round 14)
+
+- [ ] BUG: Stepper bertumpuk di atas header saat scroll — fix z-index/sticky agar stepper selalu di bawah header
+- [ ] BUG: Saat streaming "Menulis script..." editor masih plain text bukan Tiptap — transisi tidak smooth
+- [ ] BUG: Status stuck di processing tidak lanjut ke completed — fix SSE state machine di client
+
+## Feature Expansion — YouTube Shorts & LinkedIn Scraper (Round 15)
+- [ ] SCHEMA: Tambah YOUTUBE & LINKEDIN ke Platform enum di prisma/schema.prisma
+- [ ] SCHEMA: Tambah field linkedinText (optional) di ScriptJob untuk paste manual
+- [ ] BACKEND: Update ScriptJobData type di queue.ts — support YOUTUBE & LINKEDIN platform
+- [ ] BACKEND: Update worker.ts — generateScript() terima platform param, buat prompt khusus LinkedIn
+- [ ] BACKEND: Tambah STYLE_PROMPTS untuk LinkedIn: PROFESSIONAL, THOUGHT_LEADERSHIP, STORYTELLING_LINKEDIN
+- [ ] BACKEND: Update notification message di worker untuk platform YOUTUBE & LINKEDIN
+- [ ] BACKEND: Update jobs API route — support linkedinText field untuk LinkedIn
+- [ ] UI: Buat halaman /dashboard/youtube — YouTube Shorts Scraper page
+- [ ] UI: Update ScraperForm — support platform YOUTUBE (URL placeholder, contoh URL)
+- [ ] UI: Buat komponen LinkedInForm — input URL atau textarea paste, styles LinkedIn-specific
+- [ ] UI: Buat halaman /dashboard/linkedin — LinkedIn Scraper page dengan LinkedInForm
+- [ ] UI: Update DashboardSidebar — tambah menu YouTube & LinkedIn dengan emoji icons
+- [ ] UI: Update emoji di semua nav items (📸 Instagram, 🎵 TikTok, 🎬 YouTube, 💼 LinkedIn)
+- [ ] I18N: Tambah translation keys untuk YouTube & LinkedIn di en.json & id.json
+- [ ] I18N: Tambah styles baru LinkedIn ke locales (PROFESSIONAL, THOUGHT_LEADERSHIP, dll)

@@ -12,10 +12,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { videoUrl, platform, topic, niche, style } = await req.json();
+    const {
+      videoUrl,
+      platform,
+      topic,
+      niche,
+      style,
+      targetAudience,
+      linkedinText,
+    } = await req.json();
 
-    if (!videoUrl || !platform || !style) {
+    if (!platform || !style) {
       return NextResponse.json({ error: "Data tidak lengkap." }, { status: 400 });
+    }
+
+    // For LinkedIn with pasted text, videoUrl can be empty
+    const isLinkedInWithText = platform === "LINKEDIN" && linkedinText && linkedinText.trim().length > 10;
+    if (!videoUrl && !isLinkedInWithText) {
+      return NextResponse.json({ error: "URL atau teks konten wajib diisi." }, { status: 400 });
     }
 
     // Check credits
@@ -36,10 +50,12 @@ export async function POST(req: NextRequest) {
       prisma.scriptJob.create({
         data: {
           userId: session.user.id,
-          videoUrl,
+          videoUrl: videoUrl || "",
           platform,
           topic: topic || null,
           niche: niche || null,
+          targetAudience: targetAudience || null,
+          linkedinText: linkedinText || null,
           style,
           status: "PENDING",
           creditsUsed: CREDITS_PER_GENERATION,
@@ -48,12 +64,18 @@ export async function POST(req: NextRequest) {
     ]);
 
     // Record credit transaction
+    const platformLabel: Record<string, string> = {
+      INSTAGRAM: "Instagram",
+      TIKTOK: "TikTok",
+      YOUTUBE: "YouTube Shorts",
+      LINKEDIN: "LinkedIn",
+    };
     await prisma.creditTransaction.create({
       data: {
         userId: session.user.id,
         amount: -CREDITS_PER_GENERATION,
         type: "USAGE",
-        description: `Generate script ${platform} — ${style}`,
+        description: `Generate script ${platformLabel[platform] || platform} — ${style}`,
         referenceId: job.id,
       },
     });
@@ -62,10 +84,12 @@ export async function POST(req: NextRequest) {
     await addScriptJob({
       jobId: job.id,
       userId: session.user.id,
-      videoUrl,
+      videoUrl: videoUrl || "",
       platform,
       topic,
       niche,
+      targetAudience,
+      linkedinText,
       style,
     });
 
