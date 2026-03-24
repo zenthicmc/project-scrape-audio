@@ -146,11 +146,10 @@ export default function LinkedInForm({ credits }: LinkedInFormProps) {
             <button
               type="button"
               onClick={() => setInputMode("text")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all border ${
-                inputMode === "text"
-                  ? "bg-primary/10 border-primary text-primary ring-1 ring-primary/30"
-                  : "bg-secondary border-border text-muted-foreground hover:border-primary/40"
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all border ${inputMode === "text"
+                ? "bg-primary/10 border-primary text-primary ring-1 ring-primary/30"
+                : "bg-secondary border-border text-muted-foreground hover:border-primary/40"
+                }`}
             >
               <FileText className="w-4 h-4" />
               {language === "id" ? "Tempel Teks" : "Paste Text"}
@@ -158,11 +157,10 @@ export default function LinkedInForm({ credits }: LinkedInFormProps) {
             <button
               type="button"
               onClick={() => setInputMode("url")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all border ${
-                inputMode === "url"
-                  ? "bg-primary/10 border-primary text-primary ring-1 ring-primary/30"
-                  : "bg-secondary border-border text-muted-foreground hover:border-primary/40"
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all border ${inputMode === "url"
+                ? "bg-primary/10 border-primary text-primary ring-1 ring-primary/30"
+                : "bg-secondary border-border text-muted-foreground hover:border-primary/40"
+                }`}
             >
               <Link2 className="w-4 h-4" />
               {language === "id" ? "URL Post" : "Post URL"}
@@ -218,14 +216,6 @@ export default function LinkedInForm({ credits }: LinkedInFormProps) {
                   <code className="bg-secondary px-2 py-0.5 rounded text-primary/80 truncate">
                     https://www.linkedin.com/posts/username_...
                   </code>
-                </div>
-                <div className="flex items-start gap-2 bg-blue-500/10 border border-blue-500/20 rounded-lg px-3 py-2">
-                  <span className="text-blue-400 mt-0.5">⚡</span>
-                  <span className="text-blue-400/90 leading-relaxed">
-                    {language === "id"
-                      ? "Konten post akan otomatis di-scrape menggunakan Apify. Pastikan post bersifat publik."
-                      : "Post content will be automatically scraped via Apify. Make sure the post is public."}
-                  </span>
                 </div>
               </div>
             </div>
@@ -309,11 +299,10 @@ export default function LinkedInForm({ credits }: LinkedInFormProps) {
                   key={value}
                   type="button"
                   onClick={() => setForm({ ...form, style: value })}
-                  className={`relative flex flex-col items-start gap-1.5 p-3.5 rounded-xl border text-left transition-all ${
-                    isSelected
-                      ? "bg-primary/10 border-primary ring-1 ring-primary/30 shadow-sm"
-                      : "bg-secondary border-border hover:border-primary/40 hover:bg-secondary/80"
-                  }`}
+                  className={`relative flex flex-col items-start gap-1.5 p-3.5 rounded-xl border text-left transition-all ${isSelected
+                    ? "bg-primary/10 border-primary ring-1 ring-primary/30 shadow-sm"
+                    : "bg-secondary border-border hover:border-primary/40 hover:bg-secondary/80"
+                    }`}
                 >
                   {isSelected && (
                     <CheckCircle2 className="absolute top-2.5 right-2.5 w-3.5 h-3.5 text-primary" />
