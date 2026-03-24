@@ -3,24 +3,18 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
-  Loader2, CheckCircle, XCircle, Copy, Check,
-  RefreshCw, ArrowLeft, Zap, Sparkles, FileText, Brain
+  Loader2, CheckCircle, XCircle,
+  RefreshCw, ArrowLeft, Zap, Sparkles, FileText, Brain, Check
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import TextAlign from "@tiptap/extension-text-align";
-import Link2 from "@tiptap/extension-link";
-import { marked } from "marked";
-import {
-  Bold, Italic, Underline as UnderlineIcon,
-  AlignLeft, AlignCenter, AlignRight,
-  List, ListOrdered, Heading1, Heading2, Heading3,
-  Undo, Redo
-} from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const TiptapEditor = dynamic(() => import("@/components/editor/TiptapEditor"), {
+  ssr: false,
+  loading: () => <div className="h-96 bg-secondary/30 rounded-xl animate-pulse" />,
+});
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -73,231 +67,6 @@ function SkeletonLines({ count = 8 }: { count?: number }) {
   );
 }
 
-// ─── Convert markdown to HTML ─────────────────────────────────────────────────
-
-function markdownToHtml(markdown: string): string {
-  marked.setOptions({ breaks: true, gfm: true });
-  const result = marked.parse(markdown);
-  return typeof result === "string" ? result : "";
-}
-
-// ─── Tiptap toolbar button ────────────────────────────────────────────────────
-
-function ToolbarButton({
-  onClick, active, title, children, disabled,
-}: {
-  onClick: () => void;
-  active?: boolean;
-  title: string;
-  children: React.ReactNode;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      disabled={disabled}
-      className={cn(
-        "p-1.5 rounded-lg transition-colors",
-        disabled && "opacity-30 cursor-not-allowed",
-        !disabled && active
-          ? "bg-primary text-white"
-          : !disabled
-            ? "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            : ""
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-// ─── Inline Tiptap Editor ─────────────────────────────────────────────────────
-
-function InlineTiptapEditor({
-  htmlContent,
-  onCopy,
-  copied,
-  language,
-  isEditable,
-}: {
-  htmlContent: string;
-  onCopy: () => void;
-  copied: boolean;
-  language: string;
-  isEditable: boolean;
-}) {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Underline,
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Link2.configure({ openOnClick: false }),
-    ],
-    content: htmlContent,
-    editable: isEditable,
-    editorProps: {
-      attributes: {
-        class: "outline-none min-h-[400px]",
-      },
-    },
-  });
-
-  // Update content when htmlContent changes (streaming chunks)
-  useEffect(() => {
-    if (!editor) return;
-    const currentHtml = editor.getHTML();
-    if (currentHtml !== htmlContent && htmlContent) {
-      editor.commands.setContent(htmlContent, false);
-    }
-  }, [htmlContent, editor]);
-
-  // Toggle editable when isEditable changes
-  useEffect(() => {
-    if (!editor) return;
-    editor.setEditable(isEditable);
-  }, [isEditable, editor]);
-
-  if (!editor) return null;
-
-  return (
-    <div>
-      {/* Toolbar */}
-      <div className={cn(
-        "flex flex-wrap items-center gap-1 px-4 py-2 border-b border-border bg-secondary/30 transition-opacity",
-        !isEditable && "opacity-50"
-      )}>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          active={editor.isActive("bold")}
-          title="Bold"
-          disabled={!isEditable}
-        >
-          <Bold className="w-3.5 h-3.5" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          active={editor.isActive("italic")}
-          title="Italic"
-          disabled={!isEditable}
-        >
-          <Italic className="w-3.5 h-3.5" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          active={editor.isActive("underline")}
-          title="Underline"
-          disabled={!isEditable}
-        >
-          <UnderlineIcon className="w-3.5 h-3.5" />
-        </ToolbarButton>
-        <div className="w-px h-5 bg-border mx-1" />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          active={editor.isActive("heading", { level: 1 })}
-          title="Heading 1"
-          disabled={!isEditable}
-        >
-          <Heading1 className="w-3.5 h-3.5" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          active={editor.isActive("heading", { level: 2 })}
-          title="Heading 2"
-          disabled={!isEditable}
-        >
-          <Heading2 className="w-3.5 h-3.5" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          active={editor.isActive("heading", { level: 3 })}
-          title="Heading 3"
-          disabled={!isEditable}
-        >
-          <Heading3 className="w-3.5 h-3.5" />
-        </ToolbarButton>
-        <div className="w-px h-5 bg-border mx-1" />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("left").run()}
-          active={editor.isActive({ textAlign: "left" })}
-          title="Align Left"
-          disabled={!isEditable}
-        >
-          <AlignLeft className="w-3.5 h-3.5" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
-          active={editor.isActive({ textAlign: "center" })}
-          title="Align Center"
-          disabled={!isEditable}
-        >
-          <AlignCenter className="w-3.5 h-3.5" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
-          active={editor.isActive({ textAlign: "right" })}
-          title="Align Right"
-          disabled={!isEditable}
-        >
-          <AlignRight className="w-3.5 h-3.5" />
-        </ToolbarButton>
-        <div className="w-px h-5 bg-border mx-1" />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          active={editor.isActive("bulletList")}
-          title="Bullet List"
-          disabled={!isEditable}
-        >
-          <List className="w-3.5 h-3.5" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          active={editor.isActive("orderedList")}
-          title="Ordered List"
-          disabled={!isEditable}
-        >
-          <ListOrdered className="w-3.5 h-3.5" />
-        </ToolbarButton>
-        <div className="w-px h-5 bg-border mx-1" />
-        <ToolbarButton
-          onClick={() => editor.chain().focus().undo().run()}
-          title="Undo"
-          disabled={!isEditable}
-        >
-          <Undo className="w-3.5 h-3.5" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().redo().run()}
-          title="Redo"
-          disabled={!isEditable}
-        >
-          <Redo className="w-3.5 h-3.5" />
-        </ToolbarButton>
-
-        {/* Copy button on the right */}
-        <div className="ml-auto">
-          <button
-            onClick={onCopy}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-border rounded-lg hover:bg-secondary transition-colors"
-          >
-            {copied
-              ? <><Check className="w-3.5 h-3.5 text-green-500" /> {language === "id" ? "Tersalin!" : "Copied!"}</>
-              : <><Copy className="w-3.5 h-3.5" /> {language === "id" ? "Salin" : "Copy"}</>
-            }
-          </button>
-        </div>
-      </div>
-
-      {/* Editor content */}
-      <EditorContent
-        editor={editor}
-        className="prose prose-base dark:prose-invert max-w-none px-8 py-6 min-h-[400px] focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[400px]"
-      />
-    </div>
-  );
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ProcessingPage() {
@@ -308,10 +77,8 @@ export default function ProcessingPage() {
   const [status, setStatus] = useState<ProcessingStatus>("idle");
   const [streamedText, setStreamedText] = useState("");
   const [finalScript, setFinalScript] = useState("");
-  const [tiptapHtml, setTiptapHtml] = useState("");
   const [jobMeta, setJobMeta] = useState<JobMeta>({});
   const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
 
   const outputRef = useRef<HTMLDivElement>(null);
@@ -322,7 +89,7 @@ export default function ProcessingPage() {
     if (outputRef.current && status === "streaming") {
       outputRef.current.scrollTop = outputRef.current.scrollHeight;
     }
-  }, [tiptapHtml, status]);
+  }, [streamedText, status]);
 
   const startStream = useCallback(() => {
     if (eventSourceRef.current) {
@@ -332,7 +99,6 @@ export default function ProcessingPage() {
     setStatus("fetching");
     setStreamedText("");
     setFinalScript("");
-    setTiptapHtml("");
     setError("");
 
     const es = new EventSource(`/api/generate/${jobId}/stream`);
@@ -361,7 +127,6 @@ export default function ProcessingPage() {
       });
       if (s === "PENDING") setStatus("fetching");
       else if (s === "PROCESSING") setStatus("processing");
-      // COMPLETED status from DB → streaming will start via streaming_start event
     });
 
     es.addEventListener("streaming_start", () => {
@@ -372,13 +137,7 @@ export default function ProcessingPage() {
       const data = safeParse("chunk", e.data);
       if (!data) return;
       const chunkText = data.text as string;
-      setStreamedText(prev => {
-        const newText = prev + chunkText;
-        // Convert accumulated markdown to HTML for Tiptap in real-time
-        const html = markdownToHtml(newText);
-        setTiptapHtml(html);
-        return newText;
-      });
+      setStreamedText(prev => prev + chunkText);
     });
 
     es.addEventListener("completed", (e) => {
@@ -392,8 +151,6 @@ export default function ProcessingPage() {
       const script = data.script as string;
       setFinalScript(script);
       setStreamedText(script);
-      const html = markdownToHtml(script);
-      setTiptapHtml(html);
       setStatus("completed");
       es.close();
     });
@@ -433,23 +190,6 @@ export default function ProcessingPage() {
     return () => { eventSourceRef.current?.close(); };
   }, [startStream]);
 
-  // Copy plain text (strip markdown/HTML)
-  const handleCopy = async () => {
-    const text = finalScript || streamedText;
-    if (!text) return;
-    const plain = text
-      .replace(/#{1,6}\s+/g, "")
-      .replace(/\*\*(.+?)\*\*/g, "$1")
-      .replace(/\*(.+?)\*/g, "$1")
-      .replace(/_{1,2}(.+?)_{1,2}/g, "$1")
-      .replace(/---+/g, "")
-      .replace(/\[(.+?)\]\(.+?\)/g, "$1")
-      .trim();
-    await navigator.clipboard.writeText(plain);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   const handleRetry = async () => {
     setIsRetrying(true);
     try {
@@ -469,13 +209,13 @@ export default function ProcessingPage() {
 
   const currentStepIndex = getStepIndex(status);
   const isActive = status !== "completed" && status !== "failed" && status !== "timeout";
-  const hasOutput = tiptapHtml.length > 0;
+  const hasOutput = streamedText.length > 0;
   const platformLabel = jobMeta.platform === "INSTAGRAM" ? "Instagram" : jobMeta.platform === "TIKTOK" ? "TikTok" : "";
   const isEditable = status === "completed";
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top nav bar — z-50 so it always stays above everything when scrolling */}
+      {/* Top nav bar */}
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border px-4 sm:px-6 h-14 flex items-center justify-between">
         <Link
           href="/dashboard"
@@ -507,7 +247,7 @@ export default function ProcessingPage() {
         </div>
       </div>
 
-      {/* Main content — z-0 so it scrolls under the sticky header */}
+      {/* Main content */}
       <div className="relative z-0 max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {/* Page header */}
         <div className="text-center mb-8">
@@ -548,12 +288,10 @@ export default function ProcessingPage() {
         {(isActive || status === "completed") && (
           <div className="mb-8">
             <div className="relative">
-              {/* Track line: left/right offset = 50% of one column (25%/2 = 12.5%) */}
               <div
                 className="absolute h-0.5 bg-border"
                 style={{ top: "20px", left: "12.5%", right: "12.5%" }}
               />
-              {/* Filled progress line */}
               <div
                 className="absolute h-0.5 bg-primary transition-all duration-700"
                 style={{
@@ -565,7 +303,6 @@ export default function ProcessingPage() {
                 }}
               />
 
-              {/* Step circles — grid with 4 equal columns */}
               <div className="grid grid-cols-4">
                 {STEPS.map((step, i) => {
                   const Icon = step.icon;
@@ -600,7 +337,6 @@ export default function ProcessingPage() {
               </div>
             </div>
 
-            {/* Mobile: show current step label below */}
             <p className="text-center text-sm text-primary font-medium mt-4 sm:hidden">
               {language === "id" ? STEPS[currentStepIndex]?.labelId : STEPS[currentStepIndex]?.labelEn}
             </p>
@@ -657,17 +393,14 @@ export default function ProcessingPage() {
           {/* Output content */}
           <div ref={outputRef} className="min-h-[300px] max-h-[80vh] overflow-y-auto">
             {!hasOutput && isActive ? (
-              // Skeleton loading while waiting for first chunk
               <SkeletonLines count={10} />
 
             ) : hasOutput ? (
-              // Tiptap editor — shown during streaming (read-only) and completed (editable)
-              <InlineTiptapEditor
-                htmlContent={tiptapHtml}
-                onCopy={handleCopy}
-                copied={copied}
-                language={language}
-                isEditable={isEditable}
+              <TiptapEditor
+                content={finalScript || streamedText}
+                streamingContent={status === "streaming" ? streamedText : undefined}
+                editable={isEditable}
+                placeholder={language === "id" ? "Script akan muncul di sini..." : "Script will appear here..."}
               />
 
             ) : (status === "failed" || status === "timeout") ? (

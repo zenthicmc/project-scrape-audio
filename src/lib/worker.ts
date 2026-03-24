@@ -197,7 +197,8 @@ ATURAN PENTING:
 4. Struktur script dengan jelas (hook, body, CTA)
 5. Gunakan emoji secara strategis untuk meningkatkan engagement
 6. Panjang script: 150-400 kata
-7. Format output dengan bagian yang jelas (HOOK, BODY, CTA)`;
+7. Format output dengan bagian yang jelas (HOOK, BODY, CTA)
+8. SELALU gunakan format Markdown untuk output: gunakan ## untuk heading, **bold** untuk penekanan, - untuk bullet list, dan paragraf terpisah untuk setiap bagian`;
 
   const message = await anthropic.messages.create({
     model: "claude-haiku-4-5",
