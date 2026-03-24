@@ -139,20 +139,22 @@ export default function LandingPage() {
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-10">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <span className="font-bold text-lg">ScriptAI</span>
             </div>
-            <span className="font-bold text-lg">ScriptAI</span>
-          </div>
-          <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-            <a href="#how-it-works" className="hover:text-foreground transition-colors">
-              {language === "id" ? "Cara Kerja" : "How It Works"}
-            </a>
-            <a href="#pricing" className="hover:text-foreground transition-colors">
-              {language === "id" ? "Harga" : "Pricing"}
-            </a>
-            <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
+            <div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
+              <a href="#how-it-works" className="hover:text-foreground transition-colors">
+                {language === "id" ? "Cara Kerja" : "How It Works"}
+              </a>
+              <a href="#pricing" className="hover:text-foreground transition-colors">
+                {language === "id" ? "Harga" : "Pricing"}
+              </a>
+              <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <LanguageToggle size="sm" />
@@ -629,7 +631,7 @@ export default function LandingPage() {
             </div>
             <span className="font-bold">ScriptAI</span>
           </div>
-          <p className="text-sm text-muted-foreground">© 2024 ScriptAI. {t("landing.footer.rights")}</p>
+          <p className="text-sm text-muted-foreground">© 2026 ScriptAI. {t("landing.footer.rights")}</p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <a href="#" className="hover:text-foreground transition-colors">{t("landing.footer.privacy")}</a>
             <a href="#" className="hover:text-foreground transition-colors">{t("landing.footer.terms")}</a>

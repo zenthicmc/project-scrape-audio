@@ -103,7 +103,11 @@ export default function DashboardTopbar({ user }: TopbarProps) {
           </span>
         </Link>
 
+        {/* Language Toggle */}
+        <LanguageToggle size="sm" />
 
+        {/* Theme Toggle */}
+        <ThemeToggle size="sm" />
 
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
@@ -172,20 +176,10 @@ export default function DashboardTopbar({ user }: TopbarProps) {
           </button>
 
           {showUserMenu && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden py-1">
+            <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden py-1">
               <div className="px-3 py-2 border-b border-border">
                 <p className="text-xs font-medium truncate">{user.name}</p>
                 <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-              </div>
-              <div className="px-3 py-2 border-b border-border space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">{language === "id" ? "Bahasa" : "Language"}</span>
-                  <LanguageToggle size="sm" className="h-7 text-xs px-2" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">{language === "id" ? "Tampilan" : "Theme"}</span>
-                  <ThemeToggle size="sm" className="h-7 w-7" />
-                </div>
               </div>
               <div className="py-1">
                 <Link href="/dashboard/history" onClick={() => setShowUserMenu(false)} className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-secondary transition-colors">
