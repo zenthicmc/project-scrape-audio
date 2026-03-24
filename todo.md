@@ -60,3 +60,7 @@
 - [x] FEATURE: Action buttons setelah selesai: Copy, Edit (Tiptap), Regenerate
 - [x] FEATURE: Disable submit button saat processing (prevent double submit)
 - [x] FIX: ScraperForm redirect ke /generate/[jobId] bukan ke history
+
+## Bug Fix — Transcript SSE Parsing (Round 7)
+
+- [x] BUG: Worker hanya baca 'full_text' dari event 'done' yang kosong — harus akumulasi dari setiap event 'transcript' (field 'text')
