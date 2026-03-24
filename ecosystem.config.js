@@ -17,6 +17,13 @@ module.exports = {
             out_file: "/var/www/project-scrape/logs/web-out.log",
         },
         {
+            // Multi-queue worker: spawns 4 platform-specific BullMQ Worker instances:
+            //   script-instagram  → concurrency 10
+            //   script-tiktok     → concurrency 10
+            //   script-youtube    → concurrency 10
+            //   script-linkedin   → concurrency 5
+            // Total: up to 35 parallel jobs across all platforms simultaneously.
+            // LinkedIn (Apify) never blocks video (transcription) jobs.
             name: "scriptai-worker",
             script: "npm",
             args: "run worker",
@@ -26,7 +33,7 @@ module.exports = {
             },
             instances: 1,
             autorestart: true,
-            max_memory_restart: "500M",
+            max_memory_restart: "800M",
             log_date_format: "YYYY-MM-DD HH:mm:ss",
             error_file: "/var/www/project-scrape/logs/worker-error.log",
             out_file: "/var/www/project-scrape/logs/worker-out.log",
