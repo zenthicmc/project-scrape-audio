@@ -1,5 +1,12 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+
+class InvalidLoginError extends CredentialsSignin {
+  code = "CredentialsSignin";
+}
+class UnverifiedEmailError extends CredentialsSignin {
+  code = "EmailNotVerified";
+}
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
@@ -26,7 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email dan password diperlukan");
+          throw new InvalidLoginError();
         }
 
         const user = await prisma.user.findUnique({
@@ -34,7 +41,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
 
         if (!user || !user.passwordHash) {
-          throw new Error("Email atau password salah");
+          throw new InvalidLoginError();
         }
 
         const isValid = await bcrypt.compare(
@@ -43,11 +50,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         );
 
         if (!isValid) {
-          throw new Error("Email atau password salah");
+          throw new InvalidLoginError();
         }
 
         if (!user.emailVerified) {
-          throw new Error("Email belum diverifikasi. Cek inbox Anda.");
+          throw new UnverifiedEmailError();
         }
 
         return {
