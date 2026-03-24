@@ -28,3 +28,35 @@
 - [x] UI: Scraper page — ubah style selector dari dropdown ke selectable cards
 - [x] UI: Scraper page — loading state saat generate (spinner + text)
 - [x] UI: Scraper page — empty state dengan ilustrasi ringan
+
+## UI Bug Fix — Sidebar & Header Alignment (Round 4)
+
+- [x] FIX: Sidebar dan header border tidak sejajar — gunakan flex layout yang benar
+- [x] FIX: Sidebar warna tidak konsisten dengan header — samakan ke bg-background (white)
+- [x] FIX: Sidebar harus h-screen, top-0, tidak ada offset dari header
+- [x] FIX: Border sidebar (border-r) dan header (border-b) harus warna & ketebalan sama
+
+## Bug Fix & Feature Update — Profile & Billing (Round 5)
+
+- [x] BUG: Profile update tidak realtime — fix session.update() setelah API call
+- [x] BUG: API profile update harus return latest user data
+- [x] FEATURE: Hapus sistem subscription dari billing page
+- [x] FEATURE: Ganti dengan custom amount top-up (input nominal bebas)
+- [x] FEATURE: Tampilkan estimasi credit dari nominal yang diinput
+- [x] FEATURE: Validasi minimum top-up Rp 10.000, input numeric only
+- [x] FEATURE: Update API payment/create untuk terima nominal bebas
+- [x] FEATURE: Tampilkan riwayat top-up dan riwayat penggunaan credit
+
+## Streaming API & Real-Time UX (Round 6)
+
+- [x] FEATURE: Buat streaming API endpoint /api/generate/[jobId]/stream (SSE)
+- [x] FEATURE: Buat Processing Page /generate/[jobId] dengan streaming output
+- [x] FEATURE: Progress indicator (Fetching transcript → Processing with AI → Finalizing)
+- [x] FEATURE: Skeleton loading saat belum ada data
+- [x] FEATURE: Typing effect (text muncul per chunk seperti ChatGPT)
+- [x] FEATURE: Auto-scroll ke bawah saat text bertambah
+- [x] FEATURE: State management: idle/fetching/processing/streaming/completed/failed
+- [x] FEATURE: Error handling dengan tombol retry
+- [x] FEATURE: Action buttons setelah selesai: Copy, Edit (Tiptap), Regenerate
+- [x] FEATURE: Disable submit button saat processing (prevent double submit)
+- [x] FIX: ScraperForm redirect ke /generate/[jobId] bukan ke history

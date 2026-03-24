@@ -10,12 +10,13 @@ export async function PATCH(req: NextRequest) {
     const { name } = await req.json();
     if (!name?.trim()) return NextResponse.json({ error: "Nama tidak boleh kosong." }, { status: 400 });
 
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
       data: { name: name.trim() },
+      select: { id: true, name: true, email: true, image: true },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, user: updatedUser });
   } catch (error) {
     console.error("[Profile PATCH]", error);
     return NextResponse.json({ error: "Terjadi kesalahan server." }, { status: 500 });

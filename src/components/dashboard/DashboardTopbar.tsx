@@ -90,7 +90,7 @@ export default function DashboardTopbar({ user }: TopbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-3 flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-border px-6 h-[52px] flex items-center justify-between gap-4 shrink-0">
       <div className="lg:hidden w-8" />
       <div className="flex-1" />
 

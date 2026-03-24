@@ -60,15 +60,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session: sessionUpdate }) {
+      // On initial sign-in, store user fields in token
       if (user) {
         token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.picture = user.image;
+      }
+      // When session.update({ name, image }) is called from client
+      if (trigger === "update" && sessionUpdate) {
+        if (sessionUpdate.name !== undefined) token.name = sessionUpdate.name;
+        if (sessionUpdate.image !== undefined) token.picture = sessionUpdate.image;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
+        // Propagate latest name/image from token to session
+        if (token.name) session.user.name = token.name as string;
+        if (token.picture) session.user.image = token.picture as string;
       }
       return session;
     },
