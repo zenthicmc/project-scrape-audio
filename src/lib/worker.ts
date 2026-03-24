@@ -177,7 +177,7 @@ async function generateScript(
     // LinkedIn-specific prompt: focus on professional rewriting, not video scripting
     systemPrompt = `Kamu adalah seorang ahli content strategist dan copywriter profesional yang sangat berpengalaman dalam membuat konten LinkedIn yang viral dan engaging.
 
-Tugasmu adalah merewrite dan meningkatkan kualitas konten LinkedIn yang diberikan menjadi versi yang lebih polished, engaging, dan profesional.
+Tugasmu adalah merewrite dan meningkatkan kualitas konten LinkedIn yang diberikan menjadi versi yang lebih polished, engaging, dan profesional. HANYA OUTPUT HASIL REWRITE SAJA TANPA KATA PENGANTAR (seperti "Berikut hasilnya") ATAU PENJELASAN APA PUN.
 
 INSTRUKSI GAYA: ${stylePrompt}
 
@@ -192,9 +192,11 @@ ATURAN PENTING UNTUK LINKEDIN:
 5. Pertahankan tone yang sesuai dengan gaya yang dipilih
 6. Akhiri dengan CTA yang soft: pertanyaan untuk diskusi, ajakan untuk share, atau reflection
 7. Panjang optimal: 150-300 kata (LinkedIn sweet spot)
-8. JANGAN gunakan label struktural seperti "HOOK:", "BODY:", "CTA:"
-9. SELALU gunakan format Markdown: **bold** untuk penekanan, paragraf terpisah untuk setiap bagian
-10. Gunakan emoji secara strategis tapi tidak berlebihan (LinkedIn lebih formal dari TikTok)`;
+9. JANGAN gunakan label struktural seperti "HOOK:", "BODY:", "CTA:"
+10. DILARANG KERAS menggunakan garis pemisah markdown (seperti ---, ***, ===) atau karakter transisi (seperti —, --) di mana pun
+11. SELALU gunakan format Markdown: **bold** untuk penekanan, paragraf terpisah untuk setiap bagian
+12. Gunakan emoji secara strategis tapi tidak berlebihan (LinkedIn lebih formal dari TikTok)
+13. RULES PALING PENTING: DILARANG KERAS menyertakan judul "Hasil Rewrite", tabel penjelasan perubahan, kata pengantar, atau penutup. Kembalikan HANYA teks konten akhirnya saja, TETAP GUNAKAN FORMAT MARKDOWN yang rapi.`;
 
     userContent = `Berikut adalah konten LinkedIn yang perlu direwrite dan ditingkatkan kualitasnya:\n\n---\n${transcript}\n---\n\nBuat versi yang lebih baik berdasarkan instruksi di atas.`;
 
@@ -204,7 +206,7 @@ ATURAN PENTING UNTUK LINKEDIN:
 
     systemPrompt = `Kamu adalah seorang ahli copywriter dan content creator profesional yang sangat berpengalaman dalam membuat script video viral untuk ${platformName}.
 
-Tugasmu adalah memparafrase transkrip video menjadi script yang lebih polished, engaging, dan siap digunakan.
+Tugasmu adalah memparafrase transkrip video menjadi script yang lebih polished, engaging, dan siap digunakan. HANYA OUTPUT HASIL SCRIPT SAJA TANPA KATA PENGANTAR ATAU PENJELASAN APA PUN.
 
 INSTRUKSI GAYA: ${stylePrompt}
 
@@ -219,9 +221,10 @@ ATURAN PENTING:
 5. Gunakan emoji secara strategis untuk meningkatkan engagement
 6. Panjang script: 150-400 kata
 7. JANGAN gunakan label bagian seperti "HOOK:", "BODY:", "CTA:", atau label struktural lainnya
-8. JANGAN gunakan garis pemisah atau karakter transisi seperti ---, --, ===, —, atau karakter pemisah lainnya di dalam kalimat maupun antar paragraf
+8. DILARANG KERAS menggunakan garis pemisah markdown (seperti ---, ***, ===) atau karakter transisi (seperti —, --) di mana pun. Pastikan teks bersih dari garis-garis pemisah.
 9. SELALU gunakan format Markdown untuk output: gunakan ## untuk heading, **bold** untuk penekanan, - untuk bullet list, dan paragraf terpisah untuk setiap bagian
-10. Script harus mengalir natural tanpa penanda struktural yang terlihat oleh pembaca`;
+10. Script harus mengalir natural tanpa penanda struktural yang terlihat oleh pembaca
+11. RULES PALING PENTING: DILARANG KERAS menyertakan judul besar tambahan, kata pengantar, atau kalimat penutup. Kembalikan HANYA isi script-nya saja, TETAP GUNAKAN FORMAT MARKDOWN yang rapi.`;
 
     userContent = `Berikut adalah transkrip video yang perlu diparafrase:\n\n---\n${transcript}\n---\n\nBuat script berdasarkan instruksi di atas.`;
   }
@@ -240,7 +243,16 @@ ATURAN PENTING:
 
   const content = message.content[0];
   if (content.type !== "text") throw new Error("Unexpected response type from Claude");
-  return content.text;
+
+  let finalScript = content.text;
+
+  // Post-processing cleanup rules
+  // 1. Remove markdown horizontal rules (---, ___ , ***) at the start of a line
+  finalScript = finalScript.replace(/^[-_*]{3,}\s*$/gm, "");
+  // 2. Remove em dashes (—) and en dashes (–), replace with space
+  finalScript = finalScript.replace(/[—–]/g, " ");
+
+  return finalScript.trim();
 }
 
 /**
