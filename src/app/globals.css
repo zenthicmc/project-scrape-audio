@@ -5,7 +5,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @layer base {
-  :root {
+  /* ── Dark Mode (default) ── */
+  :root,
+  .dark {
     --background: 222 47% 6%;
     --foreground: 210 40% 96%;
     --card: 222 47% 9%;
@@ -35,6 +37,38 @@
     --sidebar-border: 222 47% 14%;
     --sidebar-ring: 262 83% 65%;
   }
+
+  /* ── Light Mode ── */
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 222 47% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 10%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 94%;
+    --secondary-foreground: 222 47% 20%;
+    --muted: 220 14% 94%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 88%;
+    --input: 220 14% 94%;
+    --ring: 262 83% 58%;
+    --radius: 0.625rem;
+    --sidebar: 0 0% 96%;
+    --sidebar-foreground: 222 47% 20%;
+    --sidebar-primary: 262 83% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 90%;
+    --sidebar-accent-foreground: 222 47% 20%;
+    --sidebar-border: 220 13% 85%;
+    --sidebar-ring: 262 83% 58%;
+  }
 }
 
 @layer base {
@@ -43,6 +77,7 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
@@ -60,12 +95,26 @@
   background-clip: text;
 }
 
+/* Light mode gradient text */
+.light .gradient-text {
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* Glow effect */
 .glow {
   box-shadow: 0 0 40px rgba(139, 92, 246, 0.35);
 }
 .glow:hover {
   box-shadow: 0 0 60px rgba(139, 92, 246, 0.5);
+}
+.light .glow {
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.2);
+}
+.light .glow:hover {
+  box-shadow: 0 0 50px rgba(124, 58, 237, 0.35);
 }
 
 /* Tiptap editor */

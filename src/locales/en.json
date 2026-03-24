@@ -1,0 +1,378 @@
+{
+  "common": {
+    "appName": "ScriptAI",
+    "tagline": "AI Video Script Generator",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "close": "Close",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "regenerate": "Regenerate",
+    "download": "Download",
+    "search": "Search",
+    "filter": "Filter",
+    "all": "All",
+    "or": "or",
+    "and": "and",
+    "yes": "Yes",
+    "no": "No",
+    "error": "An error occurred",
+    "success": "Success",
+    "required": "Required",
+    "optional": "Optional"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "instagram": "Instagram Scraper",
+    "tiktok": "TikTok Scraper",
+    "history": "History",
+    "billing": "Billing & Credits",
+    "settings": "Settings",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register"
+  },
+  "landing": {
+    "hero": {
+      "badge": "Powered by Claude AI",
+      "title": "Turn Viral Videos Into",
+      "titleHighlight": "Ready-to-Use Scripts",
+      "titleSuffix": "in 60 Seconds",
+      "description": "Paste an Instagram Reels or TikTok URL, choose a writing style, and get an AI-paraphrased script. No more writing from scratch.",
+      "cta": "Try for Free Now",
+      "ctaSecondary": "Watch Demo",
+      "stats": {
+        "scripts": "Scripts Created",
+        "creators": "Content Creators",
+        "styles": "Writing Styles"
+      }
+    },
+    "problem": {
+      "badge": "The Problem You Face",
+      "title": "Tired of Writing Scripts from Scratch?",
+      "description": "You've found a great reference video, but it takes hours to turn it into a unique, non-plagiarized script.",
+      "points": [
+        "Rewatching videos multiple times to note key points",
+        "Rewriting in your own words — takes 2-3 hours",
+        "The result still looks similar to the original",
+        "Need different versions for each platform"
+      ]
+    },
+    "solution": {
+      "badge": "The ScriptAI Solution",
+      "title": "From URL to Script in 60 Seconds",
+      "description": "ScriptAI automatically extracts the video transcript, then Claude AI paraphrases it in your chosen writing style.",
+      "steps": [
+        { "title": "Paste URL", "desc": "Copy the Instagram or TikTok video URL and paste it into ScriptAI" },
+        { "title": "Choose Style", "desc": "Pick from 7 writing styles: storytelling, PAS, skeptical hook, and more" },
+        { "title": "Generate", "desc": "AI works in 30-90 seconds to create a unique script" },
+        { "title": "Edit & Use", "desc": "Edit in the rich text editor, then use it for your content" }
+      ]
+    },
+    "demo": {
+      "title": "Try the Interactive Demo",
+      "description": "See how ScriptAI transforms scripts with different writing styles",
+      "urlPlaceholder": "https://www.instagram.com/reel/...",
+      "selectStyle": "Select writing style",
+      "generateBtn": "Generate Demo",
+      "resultTitle": "Script Result",
+      "disclaimer": "* Demo uses sample scripts. Real results use transcripts from your video."
+    },
+    "styles": {
+      "title": "7 Available Writing Styles",
+      "description": "Each style is designed for a different purpose — from emotional storytelling to persuasive PAS.",
+      "items": {
+        "ORIGINAL": { "label": "Original", "desc": "Preserve the original style and tone of the reference content" },
+        "MIRIP_REFERENSI": { "label": "Mirip referensi", "desc": "Adapt to the provided reference style" },
+        "STORY_TELLING": { "label": "Story telling", "desc": "Engaging and emotional narrative-based storytelling" },
+        "SKEPTICAL_HOOK": { "label": "Skeptical hook", "desc": "Start with a question that challenges common beliefs" },
+        "FOKUS_BENEFIT": { "label": "Fokus benefit", "desc": "Highlight concrete benefits with data and numbers" },
+        "PAS": { "label": "PAS", "desc": "Problem-Agitation-Solution framework proven to be effective" },
+        "FOKUS_FITUR": { "label": "Fokus fitur", "desc": "Comprehensive feature details and specifications" }
+      }
+    },
+    "comparison": {
+      "title": "Before vs After ScriptAI",
+      "before": "Before (Raw Transcript)",
+      "after": "After (Ready-to-Use Script)",
+      "beforeText": "So today I want to talk about my skincare routine. I've tried a lot of products and finally found what works. This product is really good I think. The price is also affordable. You can try it too.",
+      "afterText": "😱 HOOK:\nI almost gave up on skincare after trying 47 different products...\n\n📖 BODY:\nBut 3 months ago, everything changed. After long research and money spent on experiments, I finally found a formula that actually works for my skin.\n\nThe result? Brighter skin in 2 weeks, minimized pores, and most importantly — it won't break the bank.\n\n✅ CTA:\nWant to know the product? Full link in bio! 👆"
+    },
+    "pricing": {
+      "badge": "Transparent Pricing",
+      "title": "Choose the Right Package",
+      "description": "No monthly subscription fees. Buy credits, use anytime. Credits never expire.",
+      "perGeneration": "/script",
+      "popular": "Most Popular",
+      "features": "Includes:",
+      "buyBtn": "Buy Now",
+      "creditsLabel": "credits",
+      "note": "1 generation = 10 credits. Credits never expire. Automatic refund if process fails."
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "description": "Can't find the answer you're looking for? Contact us."
+    },
+    "cta": {
+      "title": "Ready to Create Scripts Faster?",
+      "description": "Join thousands of content creators who already use ScriptAI to speed up their content production.",
+      "btn": "Start Free — Register Now",
+      "note": "Free 50 credits on signup. No credit card required."
+    },
+    "footer": {
+      "rights": "All rights reserved.",
+      "privacy": "Privacy Policy",
+      "terms": "Terms & Conditions"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to your ScriptAI account",
+      "email": "Email",
+      "emailPlaceholder": "name@email.com",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "forgotPassword": "Forgot password?",
+      "loginBtn": "Sign In",
+      "loggingIn": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Register now",
+      "orContinueWith": "Or continue with",
+      "googleBtn": "Continue with Google",
+      "errors": {
+        "invalidCredentials": "Invalid email or password.",
+        "emailNotVerified": "Email not verified. Check your inbox.",
+        "generic": "An error occurred. Please try again."
+      }
+    },
+    "register": {
+      "title": "Create New Account",
+      "subtitle": "Sign up and get 50 free credits",
+      "name": "Full Name",
+      "namePlaceholder": "John Doe",
+      "email": "Email",
+      "emailPlaceholder": "name@email.com",
+      "phone": "Phone Number",
+      "phonePlaceholder": "+62 812 3456 7890",
+      "password": "Password",
+      "passwordPlaceholder": "Min. 8 characters",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Repeat password",
+      "registerBtn": "Register Now",
+      "registering": "Registering...",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Sign in",
+      "orContinueWith": "Or register with",
+      "googleBtn": "Register with Google",
+      "successTitle": "Verify Your Email",
+      "successMessage": "Account created! Check your email for the verification link.",
+      "errors": {
+        "emailExists": "Email already registered.",
+        "passwordMismatch": "Passwords do not match.",
+        "passwordTooShort": "Password must be at least 8 characters.",
+        "generic": "An error occurred. Please try again."
+      }
+    },
+    "forgotPassword": {
+      "title": "Forgot Password?",
+      "subtitle": "Enter your email and we'll send you a password reset link",
+      "email": "Email",
+      "emailPlaceholder": "name@email.com",
+      "sendBtn": "Send Reset Link",
+      "sending": "Sending...",
+      "backToLogin": "Back to login",
+      "successTitle": "Email Sent!",
+      "successMessage": "Check your inbox for the password reset link. Link expires in 1 hour."
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "subtitle": "Enter your new password",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Min. 8 characters",
+      "confirmPassword": "Confirm New Password",
+      "confirmPasswordPlaceholder": "Repeat new password",
+      "resetBtn": "Reset Password",
+      "resetting": "Resetting...",
+      "successTitle": "Password Reset Successful!",
+      "successMessage": "Your password has been changed. Please sign in with your new password.",
+      "loginBtn": "Sign In Now",
+      "errors": {
+        "invalidToken": "Link is invalid or has expired.",
+        "passwordMismatch": "Passwords do not match.",
+        "generic": "An error occurred. Please try again."
+      }
+    },
+    "verifyEmail": {
+      "title": "Email Verification",
+      "verifying": "Verifying your email...",
+      "successTitle": "Email Verified! 🎉",
+      "successMessage": "Your account is now active. Welcome to ScriptAI!",
+      "loginBtn": "Sign In Now",
+      "errorTitle": "Verification Failed",
+      "errorMessage": "Verification link is invalid or has expired.",
+      "resendBtn": "Resend Email"
+    }
+  },
+  "dashboard": {
+    "home": {
+      "title": "Dashboard",
+      "welcome": "Welcome",
+      "subtitle": "Start generating scripts from your Instagram or TikTok videos",
+      "stats": {
+        "credits": "Remaining Credits",
+        "totalJobs": "Total Scripts",
+        "completedJobs": "Completed Scripts",
+        "failedJobs": "Failed Scripts"
+      },
+      "quickActions": "Quick Actions",
+      "recentJobs": "Recent Scripts",
+      "noJobs": "No scripts yet. Start generating now!",
+      "startInstagram": "Start from Instagram",
+      "startTiktok": "Start from TikTok"
+    },
+    "scraper": {
+      "urlLabel": "Video URL",
+      "urlPlaceholder": "Paste video URL here...",
+      "topicLabel": "Topic / Title",
+      "topicPlaceholder": "Optional — helps AI understand context",
+      "nicheLabel": "Niche / Industry",
+      "nichePlaceholder": "Select niche...",
+      "styleLabel": "Writing Style",
+      "stylePlaceholder": "Select writing style...",
+      "generateBtn": "Generate Script",
+      "generating": "Processing...",
+      "creditsInfo": "Will use 10 credits",
+      "insufficientCredits": "Insufficient credits.",
+      "topupBtn": "Top Up Credits",
+      "successTitle": "Script is being processed!",
+      "successMessage": "You'll receive a notification when done. Check History to view the result.",
+      "errors": {
+        "invalidUrl": "Invalid URL. Make sure it's from Instagram or TikTok.",
+        "generic": "An error occurred. Please try again."
+      }
+    },
+    "history": {
+      "title": "Script History",
+      "subtitle": "All scripts you have generated",
+      "noHistory": "No history yet. Generate your first script!",
+      "status": {
+        "PENDING": "Pending",
+        "PROCESSING": "Processing",
+        "COMPLETED": "Completed",
+        "FAILED": "Failed"
+      },
+      "platform": "Platform",
+      "style": "Style",
+      "createdAt": "Created",
+      "viewBtn": "View",
+      "retryBtn": "Retry"
+    },
+    "editor": {
+      "title": "Script Editor",
+      "transcript": "Original Transcript",
+      "generatedScript": "Generated Script",
+      "editingNote": "Click text to start editing",
+      "saveBtn": "Save Changes",
+      "saving": "Saving...",
+      "saved": "Saved!",
+      "copyBtn": "Copy Script",
+      "copied": "Copied!",
+      "regenerateBtn": "Regenerate",
+      "regenerating": "Reprocessing...",
+      "jobInfo": "Job Information",
+      "platform": "Platform",
+      "style": "Writing Style",
+      "niche": "Niche",
+      "topic": "Topic",
+      "createdAt": "Created",
+      "completedAt": "Completed"
+    },
+    "billing": {
+      "title": "Billing & Credits",
+      "subtitle": "Manage your credits and transaction history",
+      "creditBalance": "Credit Balance",
+      "creditRate": "1 generate = 10 credits",
+      "noExpiry": "Credits never expire",
+      "topupTitle": "Top Up Credits",
+      "transactionHistory": "Transaction History",
+      "paymentSuccess": "Payment successful! Credits have been added to your account.",
+      "paymentPending": "Payment is being processed. Credits will be added after confirmation.",
+      "paymentError": "Payment failed. Please try again.",
+      "errors": { "generic": "An error occurred. Please try again." },
+      "balance": "Credit Balance",
+      "credits": "credits",
+      "topupTitle": "Top Up Credits",
+      "topupSubtitle": "Choose a credit package that fits your needs",
+      "buyBtn": "Buy Now",
+      "popular": "Most Popular",
+      "historyTitle": "Transaction History",
+      "noHistory": "No transactions yet.",
+      "txType": {
+        "TOPUP": "Top Up",
+        "USAGE": "Usage",
+        "REFUND": "Refund",
+        "BONUS": "Bonus"
+      },
+      "paymentStatus": {
+        "PENDING": "Pending",
+        "SUCCESS": "Success",
+        "FAILED": "Failed",
+        "EXPIRED": "Expired",
+        "CANCELLED": "Cancelled"
+      },
+      "note": "Credits never expire. Automatic refund if process fails."
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Manage your profile and account security",
+      "profileSection": "Profile",
+      "passwordSection": "Change Password",
+      "profileTitle": "Profile",
+      "nameLabel": "Name",
+      "emailLabel": "Email",
+      "emailNote": "Email cannot be changed",
+      "saveBtn": "Save Changes",
+      "saving": "Saving...",
+      "saved": "Saved!",
+      "passwordTitle": "Change Password",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "changePasswordBtn": "Change Password",
+      "passwordChanged": "Password Changed!",
+      "errors": {
+        "wrongPassword": "Current password is incorrect.",
+        "passwordMismatch": "New passwords do not match.",
+        "passwordTooShort": "Password must be at least 8 characters.",
+        "oauthAccount": "This account uses OAuth, password cannot be changed.",
+        "generic": "An error occurred."
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "markAllRead": "Mark all as read",
+      "noNotifications": "No new notifications",
+      "viewAll": "View all"
+    },
+    "topbar": {
+      "credits": "credits",
+      "topup": "Top Up"
+    }
+  },
+  "styles": {
+    "ORIGINAL": "Original",
+    "MIRIP_REFERENSI": "Mirip referensi",
+    "STORY_TELLING": "Story telling",
+    "SKEPTICAL_HOOK": "Skeptical hook",
+    "FOKUS_BENEFIT": "Fokus benefit",
+    "PAS": "PAS",
+    "FOKUS_FITUR": "Fokus fitur"
+  }
+}

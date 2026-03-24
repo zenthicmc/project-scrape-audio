@@ -3,8 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
-import { Bell, Zap, ChevronDown, LogOut, Settings, User, CheckCheck } from "lucide-react";
+import { Bell, Zap, ChevronDown, LogOut, Settings, CheckCheck } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import ThemeToggle from "@/components/ThemeToggle";
+import LanguageToggle from "@/components/LanguageToggle";
 
 interface TopbarProps {
   user: { name?: string | null; email?: string | null; image?: string | null; id?: string };
@@ -21,6 +24,7 @@ interface Notification {
 }
 
 export default function DashboardTopbar({ user }: TopbarProps) {
+  const { t, language } = useLanguage();
   const [credits, setCredits] = useState<number | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -53,7 +57,6 @@ export default function DashboardTopbar({ user }: TopbarProps) {
   useEffect(() => {
     fetchCredits();
     fetchNotifications();
-    // Poll every 15 seconds
     const interval = setInterval(() => {
       fetchCredits();
       fetchNotifications();
@@ -88,17 +91,23 @@ export default function DashboardTopbar({ user }: TopbarProps) {
 
   return (
     <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-3 flex items-center justify-between gap-4">
-      <div className="lg:hidden w-8" /> {/* Spacer for mobile menu button */}
+      <div className="lg:hidden w-8" />
       <div className="flex-1" />
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         {/* Credits */}
         <Link href="/dashboard/billing" className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors">
           <Zap className="w-3.5 h-3.5 text-primary" />
           <span className="text-sm font-semibold text-primary">
-            {credits !== null ? credits : "..."} credits
+            {credits !== null ? credits : "..."} {t("dashboard.topbar.credits")}
           </span>
         </Link>
+
+        {/* Language Toggle */}
+        <LanguageToggle size="sm" />
+
+        {/* Theme Toggle */}
+        <ThemeToggle size="sm" />
 
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
@@ -117,16 +126,18 @@ export default function DashboardTopbar({ user }: TopbarProps) {
           {showNotifs && (
             <div className="absolute right-0 top-full mt-2 w-80 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden">
               <div className="flex items-center justify-between p-4 border-b border-border">
-                <h3 className="font-semibold text-sm">Notifikasi</h3>
+                <h3 className="font-semibold text-sm">{t("dashboard.notifications.title")}</h3>
                 {unreadCount > 0 && (
                   <button onClick={markAllRead} className="flex items-center gap-1 text-xs text-primary hover:underline">
-                    <CheckCheck className="w-3 h-3" /> Tandai semua dibaca
+                    <CheckCheck className="w-3 h-3" /> {t("dashboard.notifications.markAllRead")}
                   </button>
                 )}
               </div>
               <div className="max-h-80 overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <div className="p-6 text-center text-sm text-muted-foreground">Tidak ada notifikasi</div>
+                  <div className="p-6 text-center text-sm text-muted-foreground">
+                    {t("dashboard.notifications.noNotifications")}
+                  </div>
                 ) : (
                   notifications.map(notif => (
                     <div
@@ -171,10 +182,13 @@ export default function DashboardTopbar({ user }: TopbarProps) {
                 <p className="text-xs text-muted-foreground truncate">{user.email}</p>
               </div>
               <Link href="/dashboard/settings" onClick={() => setShowUserMenu(false)} className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-secondary transition-colors">
-                <Settings className="w-4 h-4" /> Settings
+                <Settings className="w-4 h-4" /> {t("nav.settings")}
               </Link>
-              <button onClick={() => signOut({ callbackUrl: "/" })} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors">
-                <LogOut className="w-4 h-4" /> Keluar
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <LogOut className="w-4 h-4" /> {t("nav.logout")}
               </button>
             </div>
           )}

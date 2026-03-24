@@ -1,0 +1,378 @@
+{
+  "common": {
+    "appName": "ScriptAI",
+    "tagline": "AI Video Script Generator",
+    "loading": "Memuat...",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "back": "Kembali",
+    "next": "Lanjut",
+    "submit": "Kirim",
+    "close": "Tutup",
+    "copy": "Salin",
+    "copied": "Tersalin!",
+    "regenerate": "Generate Ulang",
+    "download": "Unduh",
+    "search": "Cari",
+    "filter": "Filter",
+    "all": "Semua",
+    "or": "atau",
+    "and": "dan",
+    "yes": "Ya",
+    "no": "Tidak",
+    "error": "Terjadi kesalahan",
+    "success": "Berhasil",
+    "required": "Wajib diisi",
+    "optional": "Opsional"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "instagram": "Instagram Scraper",
+    "tiktok": "TikTok Scraper",
+    "history": "History",
+    "billing": "Billing & Kredit",
+    "settings": "Pengaturan",
+    "logout": "Keluar",
+    "login": "Masuk",
+    "register": "Daftar"
+  },
+  "landing": {
+    "hero": {
+      "badge": "Powered by Claude AI",
+      "title": "Ubah Video Viral Jadi Script",
+      "titleHighlight": "Siap Pakai",
+      "titleSuffix": "dalam 60 Detik",
+      "description": "Tempel URL Instagram Reels atau TikTok, pilih gaya bahasa, dan dapatkan script yang sudah diparafrase oleh AI. Tidak perlu ngetik dari nol lagi.",
+      "cta": "Coba Gratis Sekarang",
+      "ctaSecondary": "Lihat Demo",
+      "stats": {
+        "scripts": "Script Dibuat",
+        "creators": "Content Creator",
+        "styles": "Gaya Bahasa"
+      }
+    },
+    "problem": {
+      "badge": "Masalah yang Kamu Hadapi",
+      "title": "Capek Nulis Script dari Nol?",
+      "description": "Kamu sudah menemukan video referensi yang bagus, tapi butuh waktu berjam-jam untuk mengubahnya menjadi script yang unik dan tidak plagiat.",
+      "points": [
+        "Nonton ulang video berkali-kali untuk catat poin penting",
+        "Nulis ulang dengan kata-kata sendiri — memakan waktu 2-3 jam",
+        "Hasilnya masih mirip dengan aslinya, takut kena copyright",
+        "Harus buat versi berbeda untuk setiap platform"
+      ]
+    },
+    "solution": {
+      "badge": "Solusi ScriptAI",
+      "title": "Dari URL ke Script dalam 60 Detik",
+      "description": "ScriptAI mengekstrak transkrip video secara otomatis, lalu Claude AI memparafrase dengan gaya bahasa pilihanmu.",
+      "steps": [
+        { "title": "Tempel URL", "desc": "Copy URL video Instagram atau TikTok, tempel di ScriptAI" },
+        { "title": "Pilih Gaya", "desc": "Pilih dari 7 gaya bahasa: storytelling, PAS, skeptical hook, dan lainnya" },
+        { "title": "Generate", "desc": "AI bekerja dalam 30-90 detik untuk membuat script yang unik" },
+        { "title": "Edit & Pakai", "desc": "Edit di rich text editor, lalu langsung pakai untuk kontenmu" }
+      ]
+    },
+    "demo": {
+      "title": "Coba Demo Interaktif",
+      "description": "Lihat bagaimana ScriptAI mengubah script dengan berbagai gaya bahasa",
+      "urlPlaceholder": "https://www.instagram.com/reel/...",
+      "selectStyle": "Pilih gaya bahasa",
+      "generateBtn": "Generate Demo",
+      "resultTitle": "Hasil Script",
+      "disclaimer": "* Demo menggunakan contoh script. Hasil nyata menggunakan transkrip dari video Anda."
+    },
+    "styles": {
+      "title": "7 Gaya Bahasa yang Tersedia",
+      "description": "Setiap gaya dirancang untuk tujuan yang berbeda — dari storytelling yang emosional hingga PAS yang persuasif.",
+      "items": {
+        "ORIGINAL": { "label": "Original", "desc": "Pertahankan gaya dan tone asli dari konten referensi" },
+        "MIRIP_REFERENSI": { "label": "Mirip referensi", "desc": "Sesuaikan dengan gaya referensi yang diberikan" },
+        "STORY_TELLING": { "label": "Story telling", "desc": "Narasi berbasis cerita yang engaging dan emosional" },
+        "SKEPTICAL_HOOK": { "label": "Skeptical hook", "desc": "Mulai dengan pertanyaan yang menantang kepercayaan umum" },
+        "FOKUS_BENEFIT": { "label": "Fokus benefit", "desc": "Tonjolkan manfaat konkret dengan data dan angka" },
+        "PAS": { "label": "PAS", "desc": "Problem-Agitation-Solution framework yang terbukti efektif" },
+        "FOKUS_FITUR": { "label": "Fokus fitur", "desc": "Detail fitur dan spesifikasi secara komprehensif" }
+      }
+    },
+    "comparison": {
+      "title": "Sebelum vs Sesudah ScriptAI",
+      "before": "Sebelum (Transkrip Kasar)",
+      "after": "Sesudah (Script Siap Pakai)",
+      "beforeText": "Jadi hari ini gue mau bahas tentang skincare routine yang gue pakai. Jadi gue udah coba banyak produk dan akhirnya nemu yang cocok. Produk ini bagus banget sih menurut gue. Harganya juga terjangkau. Kalian bisa coba juga.",
+      "afterText": "😱 HOOK:\nGue hampir nyerah sama skincare setelah nyoba 47 produk berbeda...\n\n📖 BODY:\nTapi 3 bulan lalu, semuanya berubah. Setelah research panjang dan duit yang habis buat eksperimen, akhirnya gue nemu formula yang works untuk kulit gue.\n\nHasilnya? Kulit lebih cerah dalam 2 minggu, pori-pori mengecil, dan yang paling penting — harganya nggak bikin kantong bolong.\n\n✅ CTA:\nMau tau produknya? Link lengkap ada di bio! 👆"
+    },
+    "pricing": {
+      "badge": "Harga Transparan",
+      "title": "Pilih Paket yang Sesuai",
+      "description": "Tidak ada biaya berlangganan bulanan. Beli kredit, pakai kapan saja. Kredit tidak expired.",
+      "perGeneration": "/script",
+      "popular": "Terpopuler",
+      "features": "Termasuk:",
+      "buyBtn": "Beli Sekarang",
+      "creditsLabel": "kredit",
+      "note": "1 generate = 10 kredit. Kredit tidak expired. Refund otomatis jika proses gagal."
+    },
+    "faq": {
+      "title": "Pertanyaan yang Sering Ditanyakan",
+      "description": "Tidak menemukan jawaban yang dicari? Hubungi kami."
+    },
+    "cta": {
+      "title": "Siap Buat Script Lebih Cepat?",
+      "description": "Bergabung dengan ribuan content creator yang sudah menggunakan ScriptAI untuk mempercepat produksi konten mereka.",
+      "btn": "Mulai Gratis — Daftar Sekarang",
+      "note": "Gratis 50 kredit saat daftar. Tidak perlu kartu kredit."
+    },
+    "footer": {
+      "rights": "Hak cipta dilindungi.",
+      "privacy": "Kebijakan Privasi",
+      "terms": "Syarat & Ketentuan"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Selamat Datang Kembali",
+      "subtitle": "Masuk ke akun ScriptAI Anda",
+      "email": "Email",
+      "emailPlaceholder": "nama@email.com",
+      "password": "Password",
+      "passwordPlaceholder": "Masukkan password",
+      "forgotPassword": "Lupa password?",
+      "loginBtn": "Masuk",
+      "loggingIn": "Sedang masuk...",
+      "noAccount": "Belum punya akun?",
+      "registerLink": "Daftar sekarang",
+      "orContinueWith": "Atau lanjutkan dengan",
+      "googleBtn": "Lanjutkan dengan Google",
+      "errors": {
+        "invalidCredentials": "Email atau password salah.",
+        "emailNotVerified": "Email belum diverifikasi. Cek inbox Anda.",
+        "generic": "Terjadi kesalahan. Coba lagi."
+      }
+    },
+    "register": {
+      "title": "Buat Akun Baru",
+      "subtitle": "Daftar dan dapatkan 50 kredit gratis",
+      "name": "Nama Lengkap",
+      "namePlaceholder": "John Doe",
+      "email": "Email",
+      "emailPlaceholder": "nama@email.com",
+      "phone": "Nomor HP",
+      "phonePlaceholder": "+62 812 3456 7890",
+      "password": "Password",
+      "passwordPlaceholder": "Min. 8 karakter",
+      "confirmPassword": "Konfirmasi Password",
+      "confirmPasswordPlaceholder": "Ulangi password",
+      "registerBtn": "Daftar Sekarang",
+      "registering": "Mendaftar...",
+      "hasAccount": "Sudah punya akun?",
+      "loginLink": "Masuk",
+      "orContinueWith": "Atau daftar dengan",
+      "googleBtn": "Daftar dengan Google",
+      "successTitle": "Verifikasi Email",
+      "successMessage": "Akun berhasil dibuat! Cek email Anda untuk link verifikasi.",
+      "errors": {
+        "emailExists": "Email sudah terdaftar.",
+        "passwordMismatch": "Password tidak cocok.",
+        "passwordTooShort": "Password minimal 8 karakter.",
+        "generic": "Terjadi kesalahan. Coba lagi."
+      }
+    },
+    "forgotPassword": {
+      "title": "Lupa Password?",
+      "subtitle": "Masukkan email Anda dan kami akan kirim link reset password",
+      "email": "Email",
+      "emailPlaceholder": "nama@email.com",
+      "sendBtn": "Kirim Link Reset",
+      "sending": "Mengirim...",
+      "backToLogin": "Kembali ke halaman masuk",
+      "successTitle": "Email Terkirim!",
+      "successMessage": "Cek inbox Anda untuk link reset password. Link berlaku 1 jam."
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "subtitle": "Masukkan password baru Anda",
+      "newPassword": "Password Baru",
+      "newPasswordPlaceholder": "Min. 8 karakter",
+      "confirmPassword": "Konfirmasi Password Baru",
+      "confirmPasswordPlaceholder": "Ulangi password baru",
+      "resetBtn": "Reset Password",
+      "resetting": "Mereset...",
+      "successTitle": "Password Berhasil Direset!",
+      "successMessage": "Password Anda telah diubah. Silakan masuk dengan password baru.",
+      "loginBtn": "Masuk Sekarang",
+      "errors": {
+        "invalidToken": "Link tidak valid atau sudah expired.",
+        "passwordMismatch": "Password tidak cocok.",
+        "generic": "Terjadi kesalahan. Coba lagi."
+      }
+    },
+    "verifyEmail": {
+      "title": "Verifikasi Email",
+      "verifying": "Memverifikasi email Anda...",
+      "successTitle": "Email Terverifikasi! 🎉",
+      "successMessage": "Akun Anda sudah aktif. Selamat datang di ScriptAI!",
+      "loginBtn": "Masuk Sekarang",
+      "errorTitle": "Verifikasi Gagal",
+      "errorMessage": "Link verifikasi tidak valid atau sudah expired.",
+      "resendBtn": "Kirim Ulang Email"
+    }
+  },
+  "dashboard": {
+    "home": {
+      "title": "Dashboard",
+      "welcome": "Selamat datang",
+      "subtitle": "Mulai generate script dari video Instagram atau TikTok Anda",
+      "stats": {
+        "credits": "Kredit Tersisa",
+        "totalJobs": "Total Script",
+        "completedJobs": "Script Selesai",
+        "failedJobs": "Script Gagal"
+      },
+      "quickActions": "Aksi Cepat",
+      "recentJobs": "Script Terbaru",
+      "noJobs": "Belum ada script. Mulai generate sekarang!",
+      "startInstagram": "Mulai dari Instagram",
+      "startTiktok": "Mulai dari TikTok"
+    },
+    "scraper": {
+      "urlLabel": "URL Video",
+      "urlPlaceholder": "Tempel URL video di sini...",
+      "topicLabel": "Topik / Judul",
+      "topicPlaceholder": "Opsional — bantu AI memahami konteks",
+      "nicheLabel": "Niche / Industri",
+      "nichePlaceholder": "Pilih niche...",
+      "styleLabel": "Gaya Bahasa",
+      "stylePlaceholder": "Pilih gaya bahasa...",
+      "generateBtn": "Generate Script",
+      "generating": "Memproses...",
+      "creditsInfo": "Akan menggunakan 10 kredit",
+      "insufficientCredits": "Kredit tidak cukup.",
+      "topupBtn": "Top Up Kredit",
+      "successTitle": "Script sedang diproses!",
+      "successMessage": "Anda akan mendapat notifikasi saat selesai. Cek History untuk melihat hasilnya.",
+      "errors": {
+        "invalidUrl": "URL tidak valid. Pastikan URL dari Instagram atau TikTok.",
+        "generic": "Terjadi kesalahan. Coba lagi."
+      }
+    },
+    "history": {
+      "title": "History Script",
+      "subtitle": "Semua script yang pernah Anda generate",
+      "noHistory": "Belum ada history. Generate script pertama Anda!",
+      "status": {
+        "PENDING": "Menunggu",
+        "PROCESSING": "Diproses",
+        "COMPLETED": "Selesai",
+        "FAILED": "Gagal"
+      },
+      "viewBtn": "Lihat",
+      "platform": "Platform",
+      "style": "Gaya",
+      "createdAt": "Dibuat",
+      "retryBtn": "Coba Lagi"
+    },
+    "editor": {
+      "title": "Editor Script",
+      "transcript": "Transkrip Asli",
+      "generatedScript": "Script yang Dihasilkan",
+      "editingNote": "Klik teks untuk mulai mengedit",
+      "saveBtn": "Simpan Perubahan",
+      "saving": "Menyimpan...",
+      "saved": "Tersimpan!",
+      "copyBtn": "Salin Script",
+      "copied": "Tersalin!",
+      "regenerateBtn": "Generate Ulang",
+      "regenerating": "Memproses ulang...",
+      "jobInfo": "Informasi Job",
+      "platform": "Platform",
+      "style": "Gaya Bahasa",
+      "niche": "Niche",
+      "topic": "Topik",
+      "createdAt": "Dibuat",
+      "completedAt": "Selesai"
+    },
+    "billing": {
+      "title": "Billing & Kredit",
+      "subtitle": "Kelola kredit dan riwayat transaksi Anda",
+      "creditBalance": "Saldo Kredit",
+      "creditRate": "1 generate = 10 kredit",
+      "noExpiry": "Kredit tidak expired",
+      "topupTitle": "Top Up Kredit",
+      "transactionHistory": "Riwayat Transaksi",
+      "paymentSuccess": "Pembayaran berhasil! Kredit telah ditambahkan ke akun Anda.",
+      "paymentPending": "Pembayaran sedang diproses. Kredit akan ditambahkan setelah konfirmasi.",
+      "paymentError": "Pembayaran gagal. Silakan coba lagi.",
+      "errors": { "generic": "Terjadi kesalahan. Coba lagi." },
+      "balance": "Saldo Kredit",
+      "credits": "kredit",
+      "topupTitle": "Top Up Kredit",
+      "topupSubtitle": "Pilih paket kredit yang sesuai kebutuhan Anda",
+      "buyBtn": "Beli Sekarang",
+      "popular": "Terpopuler",
+      "historyTitle": "Riwayat Transaksi",
+      "noHistory": "Belum ada transaksi.",
+      "txType": {
+        "TOPUP": "Top Up",
+        "USAGE": "Penggunaan",
+        "REFUND": "Refund",
+        "BONUS": "Bonus"
+      },
+      "paymentStatus": {
+        "PENDING": "Menunggu",
+        "SUCCESS": "Berhasil",
+        "FAILED": "Gagal",
+        "EXPIRED": "Expired",
+        "CANCELLED": "Dibatalkan"
+      },
+      "note": "Kredit tidak expired. Refund otomatis jika proses gagal."
+    },
+    "settings": {
+      "title": "Pengaturan",
+      "subtitle": "Kelola profil dan keamanan akun Anda",
+      "profileSection": "Profil",
+      "profileTitle": "Profil",
+      "passwordSection": "Ubah Password",
+      "nameLabel": "Nama",
+      "emailLabel": "Email",
+      "emailNote": "Email tidak dapat diubah",
+      "saveBtn": "Simpan Perubahan",
+      "saving": "Menyimpan...",
+      "saved": "Tersimpan!",
+      "passwordTitle": "Ubah Password",
+      "currentPassword": "Password Saat Ini",
+      "newPassword": "Password Baru",
+      "confirmPassword": "Konfirmasi Password Baru",
+      "changePasswordBtn": "Ubah Password",
+      "passwordChanged": "Password Diubah!",
+      "errors": {
+        "wrongPassword": "Password saat ini salah.",
+        "passwordMismatch": "Password baru tidak cocok.",
+        "passwordTooShort": "Password minimal 8 karakter.",
+        "oauthAccount": "Akun ini menggunakan OAuth, tidak bisa ubah password.",
+        "generic": "Terjadi kesalahan."
+      }
+    },
+    "notifications": {
+      "title": "Notifikasi",
+      "markAllRead": "Tandai semua dibaca",
+      "noNotifications": "Tidak ada notifikasi baru",
+      "viewAll": "Lihat semua"
+    },
+    "topbar": {
+      "credits": "kredit",
+      "topup": "Top Up"
+    }
+  },
+  "styles": {
+    "ORIGINAL": "Original",
+    "MIRIP_REFERENSI": "Mirip referensi",
+    "STORY_TELLING": "Story telling",
+    "SKEPTICAL_HOOK": "Skeptical hook",
+    "FOKUS_BENEFIT": "Fokus benefit",
+    "PAS": "PAS",
+    "FOKUS_FITUR": "Fokus fitur"
+  }
+}

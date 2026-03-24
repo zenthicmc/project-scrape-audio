@@ -8,6 +8,7 @@ import {
   ChevronLeft, ChevronRight, Eye
 } from "lucide-react";
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ScriptJob {
   id: string;
@@ -23,21 +24,22 @@ interface ScriptJob {
   errorMessage: string | null;
 }
 
-const STATUS_CONFIG = {
-  PENDING: { label: "Menunggu", icon: Clock, color: "text-yellow-400", bg: "bg-yellow-400/10 border-yellow-400/20" },
-  PROCESSING: { label: "Diproses", icon: Loader2, color: "text-blue-400", bg: "bg-blue-400/10 border-blue-400/20" },
-  COMPLETED: { label: "Selesai", icon: CheckCircle, color: "text-green-400", bg: "bg-green-400/10 border-green-400/20" },
-  FAILED: { label: "Gagal", icon: XCircle, color: "text-destructive", bg: "bg-destructive/10 border-destructive/20" },
-};
-
 function HistoryContent() {
   const searchParams = useSearchParams();
   const highlightJobId = searchParams.get("jobId");
+  const { t, language } = useLanguage();
   const [jobs, setJobs] = useState<ScriptJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const LIMIT = 10;
+
+  const STATUS_CONFIG = {
+    PENDING: { label: t("dashboard.history.status.PENDING"), icon: Clock, color: "text-yellow-400", bg: "bg-yellow-400/10 border-yellow-400/20" },
+    PROCESSING: { label: t("dashboard.history.status.PROCESSING"), icon: Loader2, color: "text-blue-400", bg: "bg-blue-400/10 border-blue-400/20" },
+    COMPLETED: { label: t("dashboard.history.status.COMPLETED"), icon: CheckCircle, color: "text-green-400", bg: "bg-green-400/10 border-green-400/20" },
+    FAILED: { label: t("dashboard.history.status.FAILED"), icon: XCircle, color: "text-destructive", bg: "bg-destructive/10 border-destructive/20" },
+  };
 
   const fetchJobs = useCallback(async () => {
     try {
@@ -55,7 +57,6 @@ function HistoryContent() {
     fetchJobs();
   }, [fetchJobs]);
 
-  // Poll for pending/processing jobs
   useEffect(() => {
     const hasPending = jobs.some(j => j.status === "PENDING" || j.status === "PROCESSING");
     if (!hasPending) return;
@@ -72,11 +73,11 @@ function HistoryContent() {
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold">History</h1>
-          <p className="text-sm text-muted-foreground">Semua script yang pernah dibuat</p>
+          <h1 className="text-xl font-bold">{t("dashboard.history.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dashboard.history.subtitle")}</p>
         </div>
         <button onClick={fetchJobs} className="flex items-center gap-1.5 px-3 py-2 text-sm border border-border rounded-lg hover:bg-secondary transition-colors">
-          <RefreshCw className="w-4 h-4" /> Refresh
+          <RefreshCw className="w-4 h-4" /> {language === "id" ? "Refresh" : "Refresh"}
         </button>
       </div>
 
@@ -87,8 +88,10 @@ function HistoryContent() {
       ) : jobs.length === 0 ? (
         <div className="text-center py-20">
           <div className="text-4xl mb-4">📝</div>
-          <h3 className="font-semibold mb-2">Belum ada history</h3>
-          <p className="text-sm text-muted-foreground mb-6">Mulai generate script pertama Anda!</p>
+          <h3 className="font-semibold mb-2">
+            {language === "id" ? "Belum ada history" : "No history yet"}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-6">{t("dashboard.history.noHistory")}</p>
           <div className="flex gap-3 justify-center">
             <Link href="/dashboard/instagram" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
               Instagram Scraper
@@ -135,7 +138,7 @@ function HistoryContent() {
                       </span>
                       {job.status === "COMPLETED" && (
                         <Link href={`/dashboard/history/${job.id}`} className="flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary rounded-lg text-xs font-medium hover:bg-primary/20 transition-colors">
-                          <Eye className="w-3 h-3" /> Lihat
+                          <Eye className="w-3 h-3" /> {t("dashboard.history.viewBtn")}
                         </Link>
                       )}
                     </div>
@@ -145,11 +148,12 @@ function HistoryContent() {
             })}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-6">
               <p className="text-sm text-muted-foreground">
-                Menampilkan {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} dari {total}
+                {language === "id"
+                  ? `Menampilkan ${(page - 1) * LIMIT + 1}–${Math.min(page * LIMIT, total)} dari ${total}`
+                  : `Showing ${(page - 1) * LIMIT + 1}–${Math.min(page * LIMIT, total)} of ${total}`}
               </p>
               <div className="flex items-center gap-2">
                 <button

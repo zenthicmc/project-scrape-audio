@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { Loader2, Save, CheckCircle } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function SettingsPage() {
   const { data: session, update } = useSession();
+  const { t, language } = useLanguage();
   const [name, setName] = useState(session?.user?.name || "");
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -34,10 +36,10 @@ export default function SettingsPage() {
         setTimeout(() => setSaved(false), 2000);
       } else {
         const data = await res.json();
-        setError(data.error || "Terjadi kesalahan.");
+        setError(data.error || t("common.errors.generic"));
       }
     } catch {
-      setError("Terjadi kesalahan.");
+      setError(t("common.errors.generic"));
     } finally {
       setLoading(false);
     }
@@ -45,8 +47,14 @@ export default function SettingsPage() {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword !== confirmPassword) { setPwError("Password baru tidak cocok."); return; }
-    if (newPassword.length < 8) { setPwError("Password minimal 8 karakter."); return; }
+    if (newPassword !== confirmPassword) {
+      setPwError(language === "id" ? "Password baru tidak cocok." : "New passwords do not match.");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setPwError(language === "id" ? "Password minimal 8 karakter." : "Password must be at least 8 characters.");
+      return;
+    }
     setPwLoading(true);
     setPwError("");
     try {
@@ -63,10 +71,10 @@ export default function SettingsPage() {
         setTimeout(() => setPwSaved(false), 2000);
       } else {
         const data = await res.json();
-        setPwError(data.error || "Terjadi kesalahan.");
+        setPwError(data.error || t("common.errors.generic"));
       }
     } catch {
-      setPwError("Terjadi kesalahan.");
+      setPwError(t("common.errors.generic"));
     } finally {
       setPwLoading(false);
     }
@@ -75,33 +83,35 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-xl font-bold">Settings</h1>
-        <p className="text-sm text-muted-foreground">Kelola profil dan keamanan akun Anda</p>
+        <h1 className="text-xl font-bold">{t("dashboard.settings.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("dashboard.settings.subtitle")}</p>
       </div>
 
       {/* Profile */}
       <div className="bg-card border border-border rounded-2xl p-6 mb-6">
-        <h2 className="font-semibold mb-4">Profil</h2>
+        <h2 className="font-semibold mb-4">{t("dashboard.settings.profileSection")}</h2>
         {error && <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive">{error}</div>}
         <form onSubmit={handleUpdateProfile} className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Nama</label>
+            <label className="text-sm font-medium mb-1.5 block">{t("dashboard.settings.nameLabel")}</label>
             <input
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
             />
           </div>
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Email</label>
+            <label className="text-sm font-medium mb-1.5 block">{t("dashboard.settings.emailLabel")}</label>
             <input
               type="email"
               value={session?.user?.email || ""}
               disabled
               className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-3 text-sm text-muted-foreground cursor-not-allowed"
             />
-            <p className="text-xs text-muted-foreground mt-1">Email tidak dapat diubah</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {language === "id" ? "Email tidak dapat diubah" : "Email cannot be changed"}
+            </p>
           </div>
           <button
             type="submit"
@@ -109,47 +119,49 @@ export default function SettingsPage() {
             className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-all disabled:opacity-70"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-            {saved ? "Tersimpan!" : "Simpan Perubahan"}
+            {saved
+              ? (language === "id" ? "Tersimpan!" : "Saved!")
+              : t("dashboard.settings.saveBtn")}
           </button>
         </form>
       </div>
 
       {/* Change Password */}
       <div className="bg-card border border-border rounded-2xl p-6">
-        <h2 className="font-semibold mb-4">Ubah Password</h2>
+        <h2 className="font-semibold mb-4">{t("dashboard.settings.passwordSection")}</h2>
         {pwError && <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive">{pwError}</div>}
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Password Saat Ini</label>
+            <label className="text-sm font-medium mb-1.5 block">{t("dashboard.settings.currentPassword")}</label>
             <input
               type="password"
               value={currentPassword}
               onChange={e => setCurrentPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground text-foreground"
             />
           </div>
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Password Baru</label>
+            <label className="text-sm font-medium mb-1.5 block">{t("dashboard.settings.newPassword")}</label>
             <input
               type="password"
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
-              placeholder="Min. 8 karakter"
+              placeholder={language === "id" ? "Min. 8 karakter" : "Min. 8 characters"}
               required
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground text-foreground"
             />
           </div>
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Konfirmasi Password Baru</label>
+            <label className="text-sm font-medium mb-1.5 block">{t("dashboard.settings.confirmNewPassword")}</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
-              placeholder="Ulangi password baru"
+              placeholder={language === "id" ? "Ulangi password baru" : "Repeat new password"}
               required
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground text-foreground"
             />
           </div>
           <button
@@ -158,7 +170,9 @@ export default function SettingsPage() {
             className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary/90 transition-all disabled:opacity-70"
           >
             {pwLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : pwSaved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-            {pwSaved ? "Password Diubah!" : "Ubah Password"}
+            {pwSaved
+              ? (language === "id" ? "Password Diubah!" : "Password Changed!")
+              : t("dashboard.settings.changePasswordBtn")}
           </button>
         </form>
       </div>

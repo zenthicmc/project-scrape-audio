@@ -4,8 +4,12 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import ThemeToggle from "@/components/ThemeToggle";
+import LanguageToggle from "@/components/LanguageToggle";
 
 export default function RegisterPage() {
+  const { t, language } = useLanguage();
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
   const [phoneCode, setPhoneCode] = useState("+62");
   const [showPassword, setShowPassword] = useState(false);
@@ -28,11 +32,11 @@ export default function RegisterPage() {
     setError("");
 
     if (form.password !== form.confirmPassword) {
-      setError("Password tidak cocok.");
+      setError(t("auth.register.errors.passwordMismatch"));
       return;
     }
     if (form.password.length < 8) {
-      setError("Password minimal 8 karakter.");
+      setError(t("auth.register.errors.passwordTooShort"));
       return;
     }
 
@@ -51,12 +55,16 @@ export default function RegisterPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Terjadi kesalahan. Coba lagi.");
+        if (data.error?.includes("already")) {
+          setError(t("auth.register.errors.emailExists"));
+        } else {
+          setError(data.error || t("auth.register.errors.generic"));
+        }
       } else {
         setSuccess(true);
       }
     } catch {
-      setError("Terjadi kesalahan. Coba lagi.");
+      setError(t("auth.register.errors.generic"));
     } finally {
       setLoading(false);
     }
@@ -69,13 +77,13 @@ export default function RegisterPage() {
           <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-green-400" />
           </div>
-          <h2 className="text-xl font-bold mb-2">Cek Email Anda!</h2>
+          <h2 className="text-xl font-bold mb-2">{t("auth.register.successTitle")}</h2>
           <p className="text-muted-foreground text-sm mb-6">
-            Kami telah mengirim link verifikasi ke <strong>{form.email}</strong>. Klik link tersebut untuk mengaktifkan akun Anda.
+            {t("auth.register.successMessage")}
           </p>
           <Link href="/auth/login">
             <button className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-all">
-              Kembali ke Login
+              {language === "id" ? "Kembali ke Login" : "Back to Login"}
             </button>
           </Link>
         </div>
@@ -85,9 +93,15 @@ export default function RegisterPage() {
 
   return (
     <div className="w-full max-w-md">
+      {/* Theme & Language toggles */}
+      <div className="flex justify-end gap-2 mb-6">
+        <LanguageToggle size="sm" />
+        <ThemeToggle size="sm" />
+      </div>
+
       <div className="bg-card border border-border rounded-2xl p-8">
-        <h1 className="text-2xl font-bold mb-2">Buat akun gratis</h1>
-        <p className="text-muted-foreground text-sm mb-8">Mulai buat script viral hari ini</p>
+        <h1 className="text-2xl font-bold mb-2">{t("auth.register.title")}</h1>
+        <p className="text-muted-foreground text-sm mb-8">{t("auth.register.subtitle")}</p>
 
         {error && (
           <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive">
@@ -108,46 +122,46 @@ export default function RegisterPage() {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
           )}
-          <span className="text-sm font-medium">Daftar dengan Google</span>
+          <span className="text-sm font-medium">{t("auth.register.googleBtn")}</span>
         </button>
 
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
           <div className="relative flex justify-center text-xs text-muted-foreground">
-            <span className="bg-card px-2">atau daftar dengan email</span>
+            <span className="bg-card px-2">{t("auth.register.orContinueWith")}</span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Nama Lengkap</label>
+            <label className="text-sm font-medium mb-1.5 block">{t("auth.register.name")}</label>
             <input
               type="text"
               value={form.name}
               onChange={e => setForm({ ...form, name: e.target.value })}
-              placeholder="John Doe"
+              placeholder={t("auth.register.namePlaceholder")}
               required
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground text-foreground"
             />
           </div>
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Email</label>
+            <label className="text-sm font-medium mb-1.5 block">{t("auth.register.email")}</label>
             <input
               type="email"
               value={form.email}
               onChange={e => setForm({ ...form, email: e.target.value })}
-              placeholder="nama@email.com"
+              placeholder={t("auth.register.emailPlaceholder")}
               required
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground text-foreground"
             />
           </div>
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Nomor HP</label>
+            <label className="text-sm font-medium mb-1.5 block">{t("auth.register.phone")}</label>
             <div className="flex gap-2">
               <select
                 value={phoneCode}
                 onChange={e => setPhoneCode(e.target.value)}
-                className="bg-secondary border border-border rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-28"
+                className="bg-secondary border border-border rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-28 text-foreground"
               >
                 {COUNTRY_CODES.map(c => (
                   <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
@@ -158,21 +172,21 @@ export default function RegisterPage() {
                 value={form.phone}
                 onChange={e => setForm({ ...form, phone: e.target.value })}
                 placeholder="812-3456-7890"
-                className="flex-1 bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground"
+                className="flex-1 bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground text-foreground"
               />
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Password</label>
+            <label className="text-sm font-medium mb-1.5 block">{t("auth.register.password")}</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 value={form.password}
                 onChange={e => setForm({ ...form, password: e.target.value })}
-                placeholder="Min. 8 karakter"
+                placeholder={t("auth.register.passwordPlaceholder")}
                 required
                 minLength={8}
-                className="w-full bg-secondary border border-border rounded-xl px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground"
+                className="w-full bg-secondary border border-border rounded-xl px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground text-foreground"
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -180,29 +194,30 @@ export default function RegisterPage() {
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Konfirmasi Password</label>
+            <label className="text-sm font-medium mb-1.5 block">{t("auth.register.confirmPassword")}</label>
             <input
               type="password"
               value={form.confirmPassword}
               onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
-              placeholder="Ulangi password"
+              placeholder={t("auth.register.confirmPasswordPlaceholder")}
               required
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground text-foreground"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-all glow disabled:opacity-70 flex items-center justify-center gap-2"
+            className="w-full py-3 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all glow disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            {loading ? "Mendaftar..." : "Buat Akun Gratis"}
+            {loading ? <><Loader2 className="w-4 h-4 animate-spin" />{t("auth.register.registering")}</> : t("auth.register.registerBtn")}
           </button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          Sudah punya akun?{" "}
-          <Link href="/auth/login" className="text-primary hover:underline font-medium">Masuk</Link>
+          {t("auth.register.hasAccount")}{" "}
+          <Link href="/auth/login" className="text-primary hover:underline font-medium">
+            {t("auth.register.loginLink")}
+          </Link>
         </p>
       </div>
     </div>

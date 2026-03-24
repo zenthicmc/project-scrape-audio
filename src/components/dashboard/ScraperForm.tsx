@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, Loader2, AlertCircle, Zap } from "lucide-react";
 import { SCRIPT_STYLES, NICHE_OPTIONS } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ScraperFormProps {
   platform: "INSTAGRAM" | "TIKTOK";
@@ -12,6 +13,7 @@ interface ScraperFormProps {
 
 export default function ScraperForm({ platform, credits }: ScraperFormProps) {
   const router = useRouter();
+  const { t, language } = useLanguage();
   const [form, setForm] = useState({
     videoUrl: "",
     topic: "",
@@ -29,9 +31,12 @@ export default function ScraperForm({ platform, credits }: ScraperFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.videoUrl.trim()) { setError("URL video wajib diisi."); return; }
+    if (!form.videoUrl.trim()) {
+      setError(language === "id" ? "URL video wajib diisi." : "Video URL is required.");
+      return;
+    }
     if (credits < 10) {
-      setError("Kredit tidak cukup. Minimal 10 kredit untuk generate script.");
+      setError(t("dashboard.scraper.insufficientCredits"));
       return;
     }
 
@@ -47,12 +52,12 @@ export default function ScraperForm({ platform, credits }: ScraperFormProps) {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Terjadi kesalahan. Coba lagi.");
+        setError(data.error || t("dashboard.scraper.errors.generic"));
       } else {
         router.push(`/dashboard/history?jobId=${data.jobId}`);
       }
     } catch {
-      setError("Terjadi kesalahan. Coba lagi.");
+      setError(t("dashboard.scraper.errors.generic"));
     } finally {
       setLoading(false);
     }
@@ -69,7 +74,7 @@ export default function ScraperForm({ platform, credits }: ScraperFormProps) {
 
       <div>
         <label className="text-sm font-medium mb-1.5 block">
-          URL Video {platformLabel} <span className="text-destructive">*</span>
+          {t("dashboard.scraper.urlLabel")} {platformLabel} <span className="text-destructive">*</span>
         </label>
         <input
           type="url"
@@ -77,32 +82,34 @@ export default function ScraperForm({ platform, credits }: ScraperFormProps) {
           onChange={e => setForm({ ...form, videoUrl: e.target.value })}
           placeholder={urlPlaceholder}
           required
-          className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground"
+          className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground text-foreground"
         />
         <p className="text-xs text-muted-foreground mt-1">
-          Paste URL lengkap dari video {platformLabel} yang ingin dijadikan referensi
+          {language === "id"
+            ? `Paste URL lengkap dari video ${platformLabel} yang ingin dijadikan referensi`
+            : `Paste the full URL of the ${platformLabel} video you want to use as reference`}
         </p>
       </div>
 
       <div>
-        <label className="text-sm font-medium mb-1.5 block">Topik / Judul Video</label>
+        <label className="text-sm font-medium mb-1.5 block">{t("dashboard.scraper.topicLabel")}</label>
         <input
           type="text"
           value={form.topic}
           onChange={e => setForm({ ...form, topic: e.target.value })}
-          placeholder="Contoh: Review skincare terbaik 2024"
-          className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground"
+          placeholder={t("dashboard.scraper.topicPlaceholder")}
+          className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground text-foreground"
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium mb-1.5 block">Niche / Industri</label>
+        <label className="text-sm font-medium mb-1.5 block">{t("dashboard.scraper.nicheLabel")}</label>
         <select
           value={form.niche}
           onChange={e => setForm({ ...form, niche: e.target.value })}
           className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
         >
-          <option value="">Pilih niche (opsional)</option>
+          <option value="">{t("dashboard.scraper.nichePlaceholder")}</option>
           {NICHE_OPTIONS.map(n => (
             <option key={n} value={n}>{n}</option>
           ))}
@@ -111,7 +118,7 @@ export default function ScraperForm({ platform, credits }: ScraperFormProps) {
 
       <div>
         <label className="text-sm font-medium mb-2 block">
-          Gaya Bahasa <span className="text-destructive">*</span>
+          {t("dashboard.scraper.styleLabel")} <span className="text-destructive">*</span>
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
           {SCRIPT_STYLES.map(style => (
@@ -135,10 +142,14 @@ export default function ScraperForm({ platform, credits }: ScraperFormProps) {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Zap className="w-4 h-4 text-primary" />
-            <span>Biaya: <strong className="text-foreground">10 credits</strong></span>
+            <span>
+              {language === "id" ? "Biaya:" : "Cost:"}{" "}
+              <strong className="text-foreground">10 credits</strong>
+            </span>
           </div>
           <div className="text-sm text-muted-foreground">
-            Sisa: <strong className={credits < 10 ? "text-destructive" : "text-foreground"}>{credits} credits</strong>
+            {language === "id" ? "Sisa:" : "Balance:"}{" "}
+            <strong className={credits < 10 ? "text-destructive" : "text-foreground"}>{credits} credits</strong>
           </div>
         </div>
 
@@ -148,16 +159,18 @@ export default function ScraperForm({ platform, credits }: ScraperFormProps) {
           className="w-full py-3.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-all glow disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Mengirim ke antrian...</>
+            <><Loader2 className="w-4 h-4 animate-spin" />
+              {language === "id" ? "Mengirim ke antrian..." : "Adding to queue..."}
+            </>
           ) : (
-            <><Sparkles className="w-4 h-4" /> Generate Script</>
+            <><Sparkles className="w-4 h-4" /> {t("dashboard.scraper.generateBtn")}</>
           )}
         </button>
 
         {credits < 10 && (
           <p className="text-center text-xs text-destructive mt-2">
-            Kredit tidak cukup.{" "}
-            <a href="/dashboard/billing" className="underline">Top up sekarang</a>
+            {t("dashboard.scraper.insufficientCredits")}{" "}
+            <a href="/dashboard/billing" className="underline">{t("dashboard.scraper.topupBtn")}</a>
           </p>
         )}
       </div>

@@ -5,18 +5,20 @@ import { usePathname } from "next/navigation";
 import { Instagram, Video, History, CreditCard, Settings, Sparkles, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-
-const NAV_ITEMS = [
-  { href: "/dashboard/instagram", icon: Instagram, label: "Instagram Scraper" },
-  { href: "/dashboard/tiktok", icon: Video, label: "TikTok Scraper" },
-  { href: "/dashboard/history", icon: History, label: "History" },
-  { href: "/dashboard/billing", icon: CreditCard, label: "Billing / Credits" },
-  { href: "/dashboard/settings", icon: Settings, label: "Settings" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t } = useLanguage();
+
+  const NAV_ITEMS = [
+    { href: "/dashboard/instagram", icon: Instagram, label: t("nav.instagram") },
+    { href: "/dashboard/tiktok", icon: Video, label: t("nav.tiktok") },
+    { href: "/dashboard/history", icon: History, label: t("nav.history") },
+    { href: "/dashboard/billing", icon: CreditCard, label: t("nav.billing") },
+    { href: "/dashboard/settings", icon: Settings, label: t("nav.settings") },
+  ];
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -51,8 +53,12 @@ export default function DashboardSidebar() {
       </nav>
       <div className="p-4 border-t border-sidebar-border">
         <div className="bg-sidebar-accent rounded-xl p-3">
-          <p className="text-xs font-medium text-sidebar-foreground mb-1">Butuh bantuan?</p>
-          <p className="text-xs text-muted-foreground">Hubungi support kami</p>
+          <p className="text-xs font-medium text-sidebar-foreground mb-1">
+            {t("common.appName")} Support
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t("common.appName")} v1.0
+          </p>
         </div>
       </div>
     </div>
