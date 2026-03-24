@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { formatDate, SCRIPT_STYLES } from "@/lib/utils";
 import {
-  Clock, CheckCircle, XCircle, Loader2, Instagram, Video, RefreshCw,
+  Clock, CheckCircle, XCircle, Loader2, Instagram, Video, Youtube, Linkedin, RefreshCw,
   Eye, RotateCcw
 } from "lucide-react";
 import Link from "next/link";
@@ -13,7 +13,7 @@ import Pagination from "@/components/ui/Pagination";
 
 interface ScriptJob {
   id: string;
-  platform: "INSTAGRAM" | "TIKTOK";
+  platform: "INSTAGRAM" | "TIKTOK" | "YOUTUBE" | "LINKEDIN";
   videoUrl: string;
   topic: string | null;
   niche: string | null;
@@ -117,12 +117,18 @@ function HistoryContent() {
             {language === "id" ? "Belum ada history" : "No history yet"}
           </h3>
           <p className="text-sm text-muted-foreground mb-6">{t("dashboard.history.noHistory")}</p>
-          <div className="flex gap-3 justify-center">
+          <div className="flex flex-wrap gap-3 justify-center">
             <Link href="/dashboard/instagram" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
-              Instagram Scraper
+              Instagram
             </Link>
             <Link href="/dashboard/tiktok" className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-secondary transition-colors text-foreground">
-              TikTok Scraper
+              TikTok
+            </Link>
+            <Link href="/dashboard/youtube" className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-secondary transition-colors text-foreground">
+              YouTube Shorts
+            </Link>
+            <Link href="/dashboard/linkedin" className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-secondary transition-colors text-foreground">
+              LinkedIn
             </Link>
           </div>
         </div>
@@ -140,12 +146,20 @@ function HistoryContent() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3 min-w-0">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${job.platform === "INSTAGRAM" ? "bg-gradient-to-br from-purple-500 to-pink-500" : "bg-gradient-to-br from-cyan-500 to-blue-500"}`}>
-                        {job.platform === "INSTAGRAM" ? <Instagram className="w-4 h-4 text-white" /> : <Video className="w-4 h-4 text-white" />}
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                        job.platform === "INSTAGRAM" ? "bg-gradient-to-br from-purple-500 to-pink-500" :
+                        job.platform === "TIKTOK" ? "bg-gradient-to-br from-cyan-500 to-blue-500" :
+                        job.platform === "YOUTUBE" ? "bg-gradient-to-br from-red-500 to-orange-500" :
+                        "bg-gradient-to-br from-blue-600 to-blue-800"
+                      }`}>
+                        {job.platform === "INSTAGRAM" ? <Instagram className="w-4 h-4 text-white" /> :
+                         job.platform === "TIKTOK" ? <Video className="w-4 h-4 text-white" /> :
+                         job.platform === "YOUTUBE" ? <Youtube className="w-4 h-4 text-white" /> :
+                         <Linkedin className="w-4 h-4 text-white" />}
                       </div>
                       <div className="min-w-0">
                         <p className="font-medium text-sm truncate">
-                          {job.topic || job.videoUrl}
+                          {job.topic || (job.platform === "LINKEDIN" ? "LinkedIn Content" : job.videoUrl)}
                         </p>
                         <div className="flex flex-wrap items-center gap-2 mt-1">
                           <span className="text-xs text-muted-foreground">{getStyleLabel(job.style)}</span>

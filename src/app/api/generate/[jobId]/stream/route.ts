@@ -58,7 +58,10 @@ export async function GET(
       let lastStatus = "";
       let scriptStreamed = false;
       let pollCount = 0;
-      const MAX_POLLS = 200; // ~5 minutes max (200 * 1.5s)
+      // LinkedIn paste mode: shorter timeout since no transcription needed (~90s max)
+      // Video modes: longer timeout for transcription (~5 minutes)
+      let isLinkedInPasteMode = false;
+      const MAX_POLLS = 200; // ~5 minutes max (200 * 1.5s), may be reduced for LinkedIn
 
       const poll = async () => {
         if (closed || pollCount >= MAX_POLLS) {
@@ -97,6 +100,21 @@ export async function GET(
             return;
           }
 
+          // Detect LinkedIn paste mode early
+          const detectedLinkedInPaste = job.platform === "LINKEDIN" && !!job.linkedinText && job.linkedinText.trim().length > 10;
+          if (detectedLinkedInPaste && !isLinkedInPasteMode) {
+            isLinkedInPasteMode = true;
+            console.log(`[SSE] LinkedIn paste mode detected for job ${jobId} — shorter timeout applies`);
+          }
+
+          // LinkedIn paste mode: timeout after 60 polls (~90s) instead of 200 (~5min)
+          const effectiveMaxPolls = isLinkedInPasteMode ? 60 : MAX_POLLS;
+          if (pollCount >= effectiveMaxPolls) {
+            send("timeout", { message: "Processing timed out" });
+            if (!closed) { controller.close(); closed = true; }
+            return;
+          }
+
           // Send status update if changed
           if (job.status !== lastStatus) {
             lastStatus = job.status;
@@ -107,7 +125,7 @@ export async function GET(
               topic: job.topic,
               videoUrl: job.videoUrl,
               // LinkedIn paste text mode: skip transcription step on frontend
-              isLinkedInPaste: job.platform === "LINKEDIN" && !!job.linkedinText && job.linkedinText.trim().length > 10,
+              isLinkedInPaste: detectedLinkedInPaste,
             });
           }
 
