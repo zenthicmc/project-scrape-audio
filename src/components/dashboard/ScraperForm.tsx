@@ -99,7 +99,8 @@ export default function ScraperForm({ platform, credits }: ScraperFormProps) {
       if (!res.ok) {
         setError(data.error || t("dashboard.scraper.errors.generic"));
       } else {
-        router.push(`/dashboard/history?jobId=${data.jobId}`);
+        // Redirect to real-time Processing Page instead of history
+        router.push(`/generate/${data.jobId}`);
       }
     } catch {
       setError(t("dashboard.scraper.errors.generic"));

@@ -46,3 +46,17 @@
 - [x] FEATURE: Validasi minimum top-up Rp 10.000, input numeric only
 - [x] FEATURE: Update API payment/create untuk terima nominal bebas
 - [x] FEATURE: Tampilkan riwayat top-up dan riwayat penggunaan credit
+
+## Streaming API & Real-Time UX (Round 6)
+
+- [x] FEATURE: Buat streaming API endpoint /api/generate/[jobId]/stream (SSE)
+- [x] FEATURE: Buat Processing Page /generate/[jobId] dengan streaming output
+- [x] FEATURE: Progress indicator (Fetching transcript → Processing with AI → Finalizing)
+- [x] FEATURE: Skeleton loading saat belum ada data
+- [x] FEATURE: Typing effect (text muncul per chunk seperti ChatGPT)
+- [x] FEATURE: Auto-scroll ke bawah saat text bertambah
+- [x] FEATURE: State management: idle/fetching/processing/streaming/completed/failed
+- [x] FEATURE: Error handling dengan tombol retry
+- [x] FEATURE: Action buttons setelah selesai: Copy, Edit (Tiptap), Regenerate
+- [x] FEATURE: Disable submit button saat processing (prevent double submit)
+- [x] FIX: ScraperForm redirect ke /generate/[jobId] bukan ke history
