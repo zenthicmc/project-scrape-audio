@@ -4,18 +4,26 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Loader2, CheckCircle, XCircle, Copy, Check, Edit3,
+  Loader2, CheckCircle, XCircle, Copy, Check,
   RefreshCw, ArrowLeft, Zap, Sparkles, FileText, Brain
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import TextAlign from "@tiptap/extension-text-align";
+import Link2 from "@tiptap/extension-link";
+import { marked } from "marked";
+import { Bold, Italic, Underline as UnderlineIcon, AlignLeft, AlignCenter, AlignRight, List, ListOrdered, Heading1, Heading2, Heading3, Undo, Redo } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type ProcessingStatus =
   | "idle"
-  | "fetching"       // waiting for worker to pick up
-  | "processing"     // worker is running
-  | "streaming"      // script is being streamed to UI
+  | "fetching"
+  | "processing"
+  | "streaming"
   | "completed"
   | "failed"
   | "timeout";
@@ -30,10 +38,10 @@ interface JobMeta {
 // ─── Progress steps config ────────────────────────────────────────────────────
 
 const STEPS = [
-  { key: "fetching", icon: Zap, labelId: "Mengambil transkrip video...", labelEn: "Fetching transcript..." },
-  { key: "processing", icon: Brain, labelId: "Memproses dengan AI...", labelEn: "Processing with AI..." },
-  { key: "streaming", icon: Sparkles, labelId: "Menulis script...", labelEn: "Writing script..." },
-  { key: "completed", icon: CheckCircle, labelId: "Selesai!", labelEn: "Done!" },
+  { key: "fetching",    icon: Zap,         labelId: "Mengambil transkrip video...", labelEn: "Fetching transcript..." },
+  { key: "processing",  icon: Brain,        labelId: "Memproses dengan AI...",       labelEn: "Processing with AI..." },
+  { key: "streaming",   icon: Sparkles,     labelId: "Menulis script...",            labelEn: "Writing script..." },
+  { key: "completed",   icon: CheckCircle,  labelId: "Selesai!",                     labelEn: "Done!" },
 ];
 
 function getStepIndex(status: ProcessingStatus): number {
@@ -53,9 +61,159 @@ function SkeletonLines({ count = 8 }: { count?: number }) {
         <div
           key={i}
           className="h-4 bg-secondary rounded-full animate-pulse"
-          style={{ width: `${60 + Math.random() * 35}%` }}
+          style={{ width: `${60 + (i * 7) % 35}%` }}
         />
       ))}
+    </div>
+  );
+}
+
+// ─── Convert markdown to HTML ─────────────────────────────────────────────────
+
+function markdownToHtml(markdown: string): string {
+  // Configure marked for clean output
+  marked.setOptions({ breaks: true, gfm: true });
+  const result = marked.parse(markdown);
+  return typeof result === "string" ? result : "";
+}
+
+// ─── Tiptap toolbar button ────────────────────────────────────────────────────
+
+function ToolbarButton({
+  onClick, active, title, children,
+}: {
+  onClick: () => void;
+  active?: boolean;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      className={cn(
+        "p-1.5 rounded-lg transition-colors",
+        active
+          ? "bg-primary text-white"
+          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ─── Tiptap editor (inline, with toolbar) ────────────────────────────────────
+
+function InlineTiptapEditor({
+  htmlContent,
+  onCopy,
+  copied,
+  language,
+}: {
+  htmlContent: string;
+  onCopy: () => void;
+  copied: boolean;
+  language: string;
+}) {
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
+      Underline,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Link2.configure({ openOnClick: false }),
+    ],
+    content: htmlContent,
+    editable: true,
+    immediatelyRender: false,
+  });
+
+  // Update editor content when htmlContent changes (after streaming completes)
+  useEffect(() => {
+    if (editor && htmlContent && editor.isEmpty) {
+      editor.commands.setContent(htmlContent);
+    }
+  }, [editor, htmlContent]);
+
+  if (!editor) return null;
+
+  return (
+    <div className="tiptap-editor">
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-0.5 px-3 py-2 border-b border-border bg-secondary/20">
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold">
+          <Bold className="w-3.5 h-3.5" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Italic">
+          <Italic className="w-3.5 h-3.5" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Underline">
+          <UnderlineIcon className="w-3.5 h-3.5" />
+        </ToolbarButton>
+
+        <div className="w-px h-4 bg-border mx-1" />
+
+        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive("heading", { level: 1 })} title="H1">
+          <Heading1 className="w-3.5 h-3.5" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} title="H2">
+          <Heading2 className="w-3.5 h-3.5" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive("heading", { level: 3 })} title="H3">
+          <Heading3 className="w-3.5 h-3.5" />
+        </ToolbarButton>
+
+        <div className="w-px h-4 bg-border mx-1" />
+
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} title="Align Left">
+          <AlignLeft className="w-3.5 h-3.5" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} title="Align Center">
+          <AlignCenter className="w-3.5 h-3.5" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title="Align Right">
+          <AlignRight className="w-3.5 h-3.5" />
+        </ToolbarButton>
+
+        <div className="w-px h-4 bg-border mx-1" />
+
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Bullet List">
+          <List className="w-3.5 h-3.5" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Ordered List">
+          <ListOrdered className="w-3.5 h-3.5" />
+        </ToolbarButton>
+
+        <div className="w-px h-4 bg-border mx-1" />
+
+        <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="Undo">
+          <Undo className="w-3.5 h-3.5" />
+        </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().redo().run()} title="Redo">
+          <Redo className="w-3.5 h-3.5" />
+        </ToolbarButton>
+
+        <div className="flex-1" />
+
+        {/* Copy button in toolbar */}
+        <button
+          type="button"
+          onClick={onCopy}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-xs font-medium transition-colors"
+        >
+          {copied
+            ? <><Check className="w-3 h-3 text-green-500" /> {language === "id" ? "Tersalin!" : "Copied!"}</>
+            : <><Copy className="w-3 h-3" /> {language === "id" ? "Copy" : "Copy"}</>
+          }
+        </button>
+      </div>
+
+      {/* Editor content */}
+      <EditorContent
+        editor={editor}
+        className="prose prose-sm dark:prose-invert max-w-none px-6 py-5 min-h-[300px] focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[300px]"
+      />
     </div>
   );
 }
@@ -86,7 +244,6 @@ export default function ProcessingPage() {
   }, [streamedText, status]);
 
   const startStream = useCallback(() => {
-    // Close any existing connection
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
     }
@@ -99,45 +256,24 @@ export default function ProcessingPage() {
     const es = new EventSource(`/api/generate/${jobId}/stream`);
     eventSourceRef.current = es;
 
-    // Helper: safely parse SSE data with logging
     const safeParse = (eventType: string, raw: string): Record<string, unknown> | null => {
       try {
         return JSON.parse(raw);
       } catch (err) {
-        console.error(
-          `[SSE Parse Error] event="${eventType}"`,
-          `\n  raw data: ${JSON.stringify(raw)}`,
-          `\n  raw length: ${raw?.length}`,
-          `\n  first 200 chars: ${raw?.substring(0, 200)}`,
-          `\n  error:`, err
-        );
+        console.error(`[SSE Parse Error] event="${eventType}"`, err);
         return null;
       }
     };
 
-    // Catch-all: log any message that arrives on the default handler
-    // (EventSource may deliver unparsed frames here)
     es.onmessage = (e) => {
-      console.warn(
-        `[SSE onmessage] Received unhandled message:`,
-        `\n  type: ${e.type}`,
-        `\n  data: ${JSON.stringify(e.data?.substring?.(0, 300) ?? e.data)}`,
-        `\n  lastEventId: ${e.lastEventId}`
-      );
+      console.warn(`[SSE onmessage] unhandled:`, e.data?.substring?.(0, 100));
     };
 
-    es.addEventListener("ping", () => {
-      console.log("[SSE] ping received — connection established");
-    });
+    es.addEventListener("ping", () => {});
 
     es.addEventListener("status", (e) => {
-      console.log("[SSE] status event, raw data:", e.data);
       const data = safeParse("status", e.data);
-      if (!data) {
-        console.error("[SSE] Failed to parse status event. Full raw:", e.data);
-        return;
-      }
-      console.log("[SSE] status parsed:", data);
+      if (!data) return;
       const s = data.status as string;
       setJobMeta({
         platform: data.platform as string,
@@ -150,7 +286,6 @@ export default function ProcessingPage() {
     });
 
     es.addEventListener("streaming_start", () => {
-      console.log("[SSE] streaming_start");
       setStatus("streaming");
     });
 
@@ -161,7 +296,6 @@ export default function ProcessingPage() {
     });
 
     es.addEventListener("completed", (e) => {
-      console.log("[SSE] completed event, raw data length:", e.data?.length);
       const data = safeParse("completed", e.data);
       if (!data) {
         setError("Failed to parse completed data");
@@ -176,22 +310,17 @@ export default function ProcessingPage() {
     });
 
     es.addEventListener("failed", (e) => {
-      console.error("[SSE] failed event, full raw data:", e.data);
       const data = safeParse("failed", e.data);
       if (data) {
-        console.error("[SSE] failed parsed:", data);
         setError((data.error as string) || "Processing failed");
       } else {
-        // Could not parse — show the raw data as the error
-        console.error("[SSE] Could not parse failed event data");
-        setError(`Processing failed. Raw response: ${e.data?.substring(0, 500) || "(empty)"}`);
+        setError(`Processing failed. ${e.data?.substring(0, 200) || ""}`);
       }
       setStatus("failed");
       es.close();
     });
 
     es.addEventListener("timeout", () => {
-      console.log("[SSE] timeout event");
       setError(language === "id"
         ? "Proses terlalu lama. Silakan coba lagi."
         : "Processing timed out. Please try again.");
@@ -200,12 +329,8 @@ export default function ProcessingPage() {
     });
 
     es.addEventListener("error", (e) => {
-      console.error("[SSE] error event", {
-        readyState: es.readyState,
-        readyStateLabel: ["CONNECTING", "OPEN", "CLOSED"][es.readyState],
-        event: e,
-      });
       if (es.readyState === EventSource.CLOSED) return;
+      console.error("[SSE] connection error", e);
       setError(language === "id"
         ? "Koneksi terputus. Silakan refresh halaman."
         : "Connection lost. Please refresh the page.");
@@ -214,29 +339,32 @@ export default function ProcessingPage() {
     });
   }, [jobId, language]);
 
-  // Start streaming on mount
   useEffect(() => {
     startStream();
-    return () => {
-      eventSourceRef.current?.close();
-    };
+    return () => { eventSourceRef.current?.close(); };
   }, [startStream]);
 
-  // Copy handler — copies plain text
+  // Copy plain text (strip markdown/HTML)
   const handleCopy = async () => {
     const text = finalScript || streamedText;
     if (!text) return;
-    await navigator.clipboard.writeText(text);
+    // Strip markdown syntax for plain text copy
+    const plain = text
+      .replace(/#{1,6}\s+/g, "")
+      .replace(/\*\*(.+?)\*\*/g, "$1")
+      .replace(/\*(.+?)\*/g, "$1")
+      .replace(/_{1,2}(.+?)_{1,2}/g, "$1")
+      .replace(/---+/g, "")
+      .replace(/\[(.+?)\]\(.+?\)/g, "$1")
+      .trim();
+    await navigator.clipboard.writeText(plain);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Retry handler
   const handleRetry = async () => {
     setIsRetrying(true);
     try {
-      await fetch(`/api/jobs/${jobId}/retry`, { method: "POST" });
-      // Redirect to new job — the retry API returns a new jobId
       const res = await fetch(`/api/jobs/${jobId}/retry`, { method: "POST" });
       const data = await res.json();
       if (data.jobId) {
@@ -254,8 +382,12 @@ export default function ProcessingPage() {
   const currentStepIndex = getStepIndex(status);
   const isActive = status !== "completed" && status !== "failed" && status !== "timeout";
   const hasOutput = streamedText.length > 0;
-
   const platformLabel = jobMeta.platform === "INSTAGRAM" ? "Instagram" : jobMeta.platform === "TIKTOK" ? "TikTok" : "";
+
+  // Convert markdown to HTML for Tiptap (only when completed)
+  const tiptapHtml = status === "completed" && finalScript
+    ? markdownToHtml(finalScript)
+    : "";
 
   return (
     <div className="min-h-screen bg-background">
@@ -266,23 +398,22 @@ export default function ProcessingPage() {
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          {language === "id" ? "Dashboard" : "Dashboard"}
+          Dashboard
         </Link>
 
         <div className="flex items-center gap-2">
-          {/* Status badge */}
           {status === "completed" && (
             <span className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full text-xs font-medium text-green-500">
               <CheckCircle className="w-3 h-3" />
               {language === "id" ? "Selesai" : "Completed"}
             </span>
           )}
-          {status === "failed" || status === "timeout" ? (
+          {(status === "failed" || status === "timeout") && (
             <span className="flex items-center gap-1.5 px-3 py-1 bg-destructive/10 border border-destructive/20 rounded-full text-xs font-medium text-destructive">
               <XCircle className="w-3 h-3" />
               {language === "id" ? "Gagal" : "Failed"}
             </span>
-          ) : null}
+          )}
           {isActive && (
             <span className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-xs font-medium text-primary">
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -294,8 +425,8 @@ export default function ProcessingPage() {
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         {/* Page header */}
-        <div className="mb-8 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             {status === "completed"
               ? <CheckCircle className="w-8 h-8 text-green-500" />
               : status === "failed" || status === "timeout"
@@ -312,7 +443,7 @@ export default function ProcessingPage() {
           </h1>
           <p className="text-sm text-muted-foreground">
             {status === "completed"
-              ? (language === "id" ? "Script Anda sudah siap. Copy, edit, atau regenerate." : "Your script is ready. Copy, edit, or regenerate.")
+              ? (language === "id" ? "Script Anda sudah siap. Edit atau copy di bawah." : "Your script is ready. Edit or copy below.")
               : status === "failed" || status === "timeout"
                 ? (language === "id" ? "Terjadi kesalahan saat memproses video Anda." : "An error occurred while processing your video.")
                 : (language === "id" ? "AI sedang memproses video kamu — hasilnya akan muncul di bawah" : "AI is processing your video — results will appear below")}
@@ -326,45 +457,66 @@ export default function ProcessingPage() {
           )}
         </div>
 
-        {/* Progress steps */}
+        {/* ─── Progress Stepper ──────────────────────────────────────────────── */}
         {(isActive || status === "completed") && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between relative">
-              {/* Progress line */}
-              <div className="absolute top-5 left-5 right-5 h-0.5 bg-border" />
+          <div className="mb-8 px-4">
+            {/* Stepper container — relative, so the line can be absolutely positioned */}
+            <div className="relative flex items-center justify-between">
+
+              {/* Background track line — sits at vertical center of the circles */}
               <div
-                className="absolute top-5 left-5 h-0.5 bg-primary transition-all duration-700"
-                style={{ width: `${(currentStepIndex / (STEPS.length - 1)) * (100 - (10 / STEPS.length))}%` }}
+                className="absolute left-0 right-0 h-0.5 bg-border"
+                style={{ top: "20px" }}   /* half of w-10 (40px) circle */
               />
 
+              {/* Filled progress line */}
+              <div
+                className="absolute left-0 h-0.5 bg-primary transition-all duration-700"
+                style={{
+                  top: "20px",
+                  width: currentStepIndex === 0
+                    ? "0%"
+                    : `calc(${(currentStepIndex / (STEPS.length - 1)) * 100}% - 0px)`,
+                }}
+              />
+
+              {/* Step circles */}
               {STEPS.map((step, i) => {
                 const Icon = step.icon;
                 const isDone = i < currentStepIndex;
                 const isCurrent = i === currentStepIndex;
                 return (
-                  <div key={step.key} className="flex flex-col items-center gap-2 relative z-10">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${isDone
-                      ? "bg-primary border-primary text-white"
-                      : isCurrent
-                        ? "bg-primary/10 border-primary text-primary"
-                        : "bg-background border-border text-muted-foreground"
-                      }`}>
+                  <div key={step.key} className="relative z-10 flex flex-col items-center gap-2">
+                    {/* Circle */}
+                    <div className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 bg-background",
+                      isDone
+                        ? "bg-primary border-primary text-white"
+                        : isCurrent
+                          ? "border-primary text-primary"
+                          : "border-border text-muted-foreground"
+                    )}>
                       {isDone
-                        ? <Check className="w-4 h-4" />
+                        ? <Check className="w-4 h-4 text-white" />
                         : isCurrent
                           ? <Loader2 className="w-4 h-4 animate-spin" />
                           : <Icon className="w-4 h-4" />
                       }
                     </div>
-                    <span className={`text-xs font-medium text-center max-w-20 leading-tight hidden sm:block ${isCurrent ? "text-primary" : isDone ? "text-foreground" : "text-muted-foreground"
-                      }`}>
+
+                    {/* Label — hidden on mobile */}
+                    <span className={cn(
+                      "text-xs font-medium text-center max-w-[80px] leading-tight hidden sm:block",
+                      isCurrent ? "text-primary" : isDone ? "text-foreground" : "text-muted-foreground"
+                    )}>
                       {language === "id" ? step.labelId : step.labelEn}
                     </span>
                   </div>
                 );
               })}
             </div>
-            {/* Mobile current step label */}
+
+            {/* Mobile: show current step label below */}
             <p className="text-center text-sm text-primary font-medium mt-4 sm:hidden">
               {language === "id" ? STEPS[currentStepIndex]?.labelId : STEPS[currentStepIndex]?.labelEn}
             </p>
@@ -388,16 +540,13 @@ export default function ProcessingPage() {
               disabled={isRetrying}
               className="mt-4 flex items-center gap-2 px-4 py-2 bg-destructive text-white rounded-xl text-sm font-medium hover:bg-destructive/90 transition-all disabled:opacity-70"
             >
-              {isRetrying
-                ? <Loader2 className="w-4 h-4 animate-spin" />
-                : <RefreshCw className="w-4 h-4" />
-              }
+              {isRetrying ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
               {language === "id" ? "Coba Lagi" : "Try Again"}
             </button>
           </div>
         )}
 
-        {/* Output area */}
+        {/* ─── Output area ──────────────────────────────────────────────────── */}
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
           {/* Output header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
@@ -414,40 +563,25 @@ export default function ProcessingPage() {
                 </span>
               )}
             </div>
-
-            {/* Action buttons — shown when completed */}
-            {status === "completed" && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleCopy}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-border rounded-lg hover:bg-secondary transition-colors"
-                >
-                  {copied
-                    ? <><Check className="w-3.5 h-3.5 text-green-500" /> {language === "id" ? "Tersalin!" : "Copied!"}</>
-                    : <><Copy className="w-3.5 h-3.5" /> {language === "id" ? "Copy" : "Copy"}</>
-                  }
-                </button>
-                <Link
-                  href={`/dashboard/history/${jobId}`}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  {language === "id" ? "Edit" : "Edit"}
-                </Link>
-              </div>
-            )}
           </div>
 
           {/* Output content */}
-          <div
-            ref={outputRef}
-            className="min-h-[300px] max-h-[60vh] overflow-y-auto"
-          >
+          <div ref={outputRef} className="min-h-[300px] max-h-[70vh] overflow-y-auto">
             {!hasOutput && isActive ? (
-              // Skeleton loading
+              // Skeleton loading while waiting
               <SkeletonLines count={10} />
+
+            ) : status === "completed" && tiptapHtml ? (
+              // Completed — render in Tiptap editor with full toolbar
+              <InlineTiptapEditor
+                htmlContent={tiptapHtml}
+                onCopy={handleCopy}
+                copied={copied}
+                language={language}
+              />
+
             ) : hasOutput ? (
-              // Streaming / completed text
+              // Streaming — plain text with cursor blink
               <div className="p-6">
                 <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground">
                   {streamedText}
@@ -456,7 +590,8 @@ export default function ProcessingPage() {
                   )}
                 </pre>
               </div>
-            ) : status === "failed" || status === "timeout" ? (
+
+            ) : (status === "failed" || status === "timeout") ? (
               <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
                 <XCircle className="w-10 h-10 mb-3 text-destructive/40" />
                 <p className="text-sm">{language === "id" ? "Tidak ada output" : "No output"}</p>
@@ -464,13 +599,13 @@ export default function ProcessingPage() {
             ) : null}
           </div>
 
-          {/* Footer with regenerate */}
+          {/* Footer */}
           {status === "completed" && (
             <div className="px-5 py-4 border-t border-border bg-secondary/30 flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
                 {language === "id"
-                  ? "Script disimpan di History. Anda bisa edit kapan saja."
-                  : "Script saved to History. You can edit anytime."}
+                  ? "Script disimpan di History. Anda bisa akses kapan saja."
+                  : "Script saved to History. You can access it anytime."}
               </p>
               <button
                 onClick={handleRetry}
@@ -487,7 +622,7 @@ export default function ProcessingPage() {
           )}
         </div>
 
-        {/* Bottom navigation hint */}
+        {/* Bottom navigation */}
         <div className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
           <Link href="/dashboard/history" className="hover:text-foreground transition-colors flex items-center gap-1">
             <FileText className="w-3.5 h-3.5" />

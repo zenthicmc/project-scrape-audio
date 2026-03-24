@@ -38,6 +38,7 @@
     "framer-motion": "^12.23.22",
     "ioredis": "^5.10.1",
     "lucide-react": "^0.453.0",
+    "marked": "^17.0.5",
     "midtrans-client": "^1.4.3",
     "nanoid": "^5.1.5",
     "next": "15.2.4",

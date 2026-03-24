@@ -81,3 +81,9 @@
 ## Bug Fix — Claude Model (Round 11)
 
 - [x] FIX: Ganti model claude-3-5-sonnet-20241022 ke claude-haiku-4-5
+
+## UI Fix — Generate Page (Round 12)
+
+- [x] FIX: Stepper garis horizontal tidak center/sejajar dengan lingkaran step
+- [x] FIX: Hapus tombol Edit, ganti dengan Tiptap editor inline langsung di halaman generate
+- [x] FIX: Tiptap harus parse dan render markdown dari output AI (##, **bold**, ---, dll)
