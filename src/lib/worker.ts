@@ -28,6 +28,8 @@ const STYLE_PROMPTS: Record<string, string> = {
   PAS: "Gunakan framework Problem-Agitation-Solution: 1) Identifikasi pain point utama, 2) Agitasi masalah (buat lebih terasa), 3) Presentasikan solusi sebagai jawaban sempurna.",
   FOKUS_FITUR:
     "Highlight fitur-fitur spesifik secara detail. Jelaskan cara kerja, spesifikasi teknis, dan keunggulan kompetitif dari setiap fitur.",
+  FOMO_URGENCY:
+    "Bangun rasa takut ketinggalan (FOMO) dan urgency. Mulai dengan hook yang membuat audiens merasa mereka akan rugi kalau tidak segera bertindak. Gunakan momentum tren, social proof, dan time pressure. Contoh opening: 'Ini lagi viral banget tapi banyak yang belum tau…', 'Kalau kamu telat lihat ini, kamu rugi…'. Buat audiens merasa harus action sekarang.",
 };
 
 async function transcribeVideo(videoUrl: string): Promise<string> {

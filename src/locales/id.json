@@ -40,7 +40,7 @@
   },
   "landing": {
     "hero": {
-      "badge": "Powered by Claude AI",
+      "badge": "Powered by Modern AI Agent",
       "title": "Ubah Video Viral Jadi Script",
       "titleHighlight": "Siap Pakai",
       "titleSuffix": "dalam 60 Detik",
@@ -75,7 +75,7 @@
         },
         {
           "title": "Pilih Gaya",
-          "desc": "Pilih dari 7 gaya bahasa: storytelling, PAS, skeptical hook, dan lainnya"
+          "desc": "Pilih dari 8 gaya bahasa: storytelling, PAS, skeptical hook, dan lainnya"
         },
         {
           "title": "Generate",
@@ -127,6 +127,10 @@
         "FOKUS_FITUR": {
           "label": "Fokus fitur",
           "desc": "Detail fitur dan spesifikasi secara komprehensif"
+        },
+        "FOMO_URGENCY": {
+          "label": "FOMO / Urgency",
+          "desc": "Bangun rasa takut ketinggalan dan dorong audiens untuk bertindak cepat"
         }
       }
     },
@@ -407,6 +411,7 @@
     "SKEPTICAL_HOOK": "Skeptical hook",
     "FOKUS_BENEFIT": "Fokus benefit",
     "PAS": "PAS",
-    "FOKUS_FITUR": "Fokus fitur"
+    "FOKUS_FITUR": "Fokus fitur",
+    "FOMO_URGENCY": "FOMO / Urgency"
   }
 }

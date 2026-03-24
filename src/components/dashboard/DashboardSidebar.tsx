@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Instagram, Music2, History, CreditCard, Settings, Sparkles, Menu, X } from "lucide-react";
+import { Instagram, Music2, Sparkles, Menu, X, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -13,11 +13,9 @@ export default function DashboardSidebar() {
   const { t } = useLanguage();
 
   const NAV_ITEMS = [
+    { href: "/dashboard", icon: LayoutDashboard, label: t("nav.dashboard") },
     { href: "/dashboard/instagram", icon: Instagram, label: t("nav.instagram") },
     { href: "/dashboard/tiktok", icon: Music2, label: t("nav.tiktok") },
-    { href: "/dashboard/history", icon: History, label: t("nav.history") },
-    { href: "/dashboard/billing", icon: CreditCard, label: t("nav.billing") },
-    { href: "/dashboard/settings", icon: Settings, label: t("nav.settings") },
   ];
 
   const SidebarContent = () => (
@@ -35,7 +33,9 @@ export default function DashboardSidebar() {
       {/* Nav items */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          const isActive = item.href === "/dashboard"
+            ? pathname === "/dashboard"
+            : pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}
@@ -59,7 +59,7 @@ export default function DashboardSidebar() {
       <div className="p-4 border-t border-border shrink-0">
         <div className="bg-secondary rounded-xl p-3">
           <p className="text-xs font-medium text-foreground mb-0.5">
-            {t("common.appName")} Support
+            {t("common.appName")}
           </p>
           <p className="text-xs text-muted-foreground">
             {t("common.appName")} v1.0

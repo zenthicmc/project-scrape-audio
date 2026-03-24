@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { Music2, Zap, Clock, CheckCircle } from "lucide-react";
+import { Music2, Zap, Clock, CheckCircle, Video } from "lucide-react";
 import ScraperForm from "@/components/dashboard/ScraperForm";
 
 export default async function TikTokScraperPage() {
@@ -20,7 +20,7 @@ export default async function TikTokScraperPage() {
         <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-full blur-2xl pointer-events-none" />
         <div className="relative flex items-start gap-4">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shrink-0">
-            <Music2 className="w-7 h-7 text-white" />
+            <Video className="w-7 h-7 text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">

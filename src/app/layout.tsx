@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "ScriptAI — AI Video Script Generator",
   description:
-    "Ubah video viral Instagram & TikTok menjadi script siap pakai dalam 60 detik. Powered by Claude AI.",
+    "Ubah video viral Instagram & TikTok menjadi script siap pakai dalam 60 detik. Powered by Modern AI Agent.",
   keywords: ["script generator", "AI", "TikTok", "Instagram", "content creator", "copywriting"],
   openGraph: {
     title: "ScriptAI — AI Video Script Generator",

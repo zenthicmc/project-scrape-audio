@@ -139,6 +139,7 @@ enum ScriptStyle {
   FOKUS_BENEFIT
   PAS
   FOKUS_FITUR
+  FOMO_URGENCY
 }
 
 enum JobStatus {

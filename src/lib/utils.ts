@@ -77,6 +77,7 @@ export const SCRIPT_STYLES = [
   { value: "FOKUS_BENEFIT", label: "Fokus benefit" },
   { value: "PAS", label: "PAS" },
   { value: "FOKUS_FITUR", label: "Fokus fitur" },
+  { value: "FOMO_URGENCY", label: "FOMO / Urgency" },
 ] as const;
 
 export const NICHE_OPTIONS = [

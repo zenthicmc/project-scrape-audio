@@ -17,6 +17,7 @@ const STYLE_OPTIONS = [
   { value: "SKEPTICAL_HOOK" },
   { value: "FOKUS_BENEFIT" },
   { value: "PAS" },
+  { value: "FOMO_URGENCY" },
 ];
 
 const ALL_STYLE_KEYS = [
@@ -27,6 +28,7 @@ const ALL_STYLE_KEYS = [
   "FOKUS_BENEFIT",
   "PAS",
   "FOKUS_FITUR",
+  "FOMO_URGENCY",
 ];
 
 const DUMMY_SCRIPTS_ID: Record<string, string> = {
@@ -131,11 +133,6 @@ export default function LandingPage() {
 
   const HOW_IT_WORKS = language === "en" ? HOW_IT_WORKS_EN : HOW_IT_WORKS_ID;
 
-  const PLANS = [
-    { name: "Starter", credits: 100, price: "Rp 49.000", perGen: "Rp 4.900/script", popular: false, features_id: ["10 script generations", "Semua 7 gaya bahasa", "Rich text editor", "History 30 hari"], features_en: ["10 script generations", "All 7 writing styles", "Rich text editor", "30-day history"] },
-    { name: "Creator", credits: 300, price: "Rp 129.000", perGen: "Rp 4.300/script", popular: true, features_id: ["30 script generations", "Semua 7 gaya bahasa", "Rich text editor", "History unlimited", "Priority processing"], features_en: ["30 script generations", "All 7 writing styles", "Rich text editor", "Unlimited history", "Priority processing"] },
-    { name: "Agency", credits: 1000, price: "Rp 399.000", perGen: "Rp 3.990/script", popular: false, features_id: ["100 script generations", "Semua 7 gaya bahasa", "Rich text editor", "History unlimited", "Priority processing", "Bulk generate"], features_en: ["100 script generations", "All 7 writing styles", "Rich text editor", "Unlimited history", "Priority processing", "Bulk generate"] },
-  ];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -227,14 +224,14 @@ export default function LandingPage() {
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <div className="flex -space-x-2">
-                {["A","B","C","D"].map((l, i) => (
+                {["A", "B", "C", "D"].map((l, i) => (
                   <div key={i} className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 border-2 border-background flex items-center justify-center text-xs font-bold text-white">{l}</div>
                 ))}
               </div>
               <span>👥 2,400+ {language === "id" ? "content creator aktif" : "active content creators"}</span>
             </div>
             <div className="flex items-center gap-1">
-              {[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
+              {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
               <span className="ml-1">⭐ 4.9/5 rating</span>
             </div>
             <div className="flex items-center gap-1">
@@ -276,11 +273,10 @@ export default function LandingPage() {
                     <button
                       key={s.value}
                       onClick={() => setDemoStyle(s.value)}
-                      className={`px-3 py-2.5 rounded-lg text-xs font-medium border transition-all ${
-                        demoStyle === s.value
-                          ? "bg-primary text-white border-primary"
-                          : "bg-secondary border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                      }`}
+                      className={`px-3 py-2.5 rounded-lg text-xs font-medium border transition-all ${demoStyle === s.value
+                        ? "bg-primary text-white border-primary"
+                        : "bg-secondary border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                        }`}
                     >
                       {t(`styles.${s.value}`)}
                     </button>
@@ -438,7 +434,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20 mb-4">
-              {language === "id" ? "7 Gaya Bahasa" : "7 Writing Styles"}
+              {language === "id" ? "8 Gaya Bahasa" : "8 Writing Styles"}
             </span>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("landing.styles.title")}</h2>
             <p className="text-muted-foreground">{t("landing.styles.description")}</p>
@@ -462,52 +458,109 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20 mb-4">
-              {t("landing.pricing.badge")}
+              {language === "id" ? "💰 Harga Terjangkau" : "💰 Affordable Pricing"}
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t("landing.pricing.title")}</h2>
-            <p className="text-muted-foreground">{t("landing.pricing.description")}</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              {language === "id" ? "Tanpa Langganan, Bayar Sesuai Pemakaian" : "No Subscription, Pay As You Go"}
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              {language === "id"
+                ? "Beli credit sekali, gunakan kapan saja. Tidak ada biaya bulanan, tidak ada komitmen."
+                : "Buy credits once, use anytime. No monthly fees, no commitment."}
+            </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {PLANS.map((plan, i) => {
-              const features = language === "en" ? plan.features_en : plan.features_id;
-              return (
-                <div key={i} className={`relative bg-card rounded-2xl p-6 border transition-all ${plan.popular ? "border-primary glow scale-105" : "border-border hover:border-primary/40"}`}>
-                  {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="px-3 py-1 bg-primary text-white text-xs font-semibold rounded-full">
-                        {t("landing.pricing.popular")}
-                      </span>
-                    </div>
-                  )}
-                  <h3 className="font-bold text-lg mb-1">{plan.name}</h3>
-                  <div className="text-3xl font-black mb-1">{plan.price}</div>
-                  <p className="text-xs text-muted-foreground mb-1">{plan.credits} {t("landing.pricing.creditsLabel")} · {plan.perGen}</p>
-                  <p className="text-xs text-primary mb-6">
-                    {language === "id" ? "Credits tidak expired!" : "Credits never expire!"}
+
+          <div className="max-w-3xl mx-auto">
+            {/* Main price card */}
+            <div className="relative bg-card border-2 border-primary/30 rounded-3xl p-8 md:p-10 overflow-hidden">
+              {/* Glow background */}
+              <div className="absolute top-0 right-0 w-60 h-60 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="relative">
+                {/* Price hero */}
+                <div className="text-center mb-8">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {language === "id" ? "Mulai dari" : "Starting from"}
                   </p>
-                  <ul className="space-y-2 mb-6">
-                    {features.map((f, j) => (
-                      <li key={j} className="flex items-center gap-2 text-sm">
-                        <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href={isLoggedIn ? "/dashboard/billing" : "/auth/register"}>
-                    <button className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-all ${plan.popular ? "bg-primary text-white hover:bg-primary/90 glow" : "border border-border hover:bg-secondary"}`}>
-                      {isLoggedIn
-                        ? (language === "id" ? "💳 Beli Sekarang" : "💳 Buy Now")
-                        : `${t("landing.pricing.buyBtn")} ${plan.name}`}
-                    </button>
-                  </Link>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-lg text-muted-foreground font-medium">Rp</span>
+                    <span className="text-6xl md:text-7xl font-black gradient-text leading-none">5.000</span>
+                  </div>
+                  <p className="text-lg text-muted-foreground mt-2">
+                    {language === "id" ? "per script generate" : "per script generation"}
+                  </p>
+                  <p className="text-sm text-primary font-medium mt-1">
+                    {language === "id" ? "☕ Lebih murah dari secangkir kopi!" : "☕ Cheaper than a cup of coffee!"}
+                  </p>
                 </div>
-              );
-            })}
+
+                {/* Divider */}
+                <div className="border-t border-border/50 my-8" />
+
+                {/* Features grid */}
+                <div className="grid sm:grid-cols-2 gap-4 mb-8">
+                  {(language === "id" ? [
+                    { icon: "⚡", text: "Bayar sesuai pemakaian" },
+                    { icon: "♾️", text: "Credit tidak pernah expired" },
+                    { icon: "🎨", text: "Akses semua 7 gaya bahasa" },
+                    { icon: "✏️", text: "Rich text editor gratis" },
+                    { icon: "🔄", text: "Refund otomatis jika gagal" },
+                    { icon: "📜", text: "History tanpa batas" },
+                  ] : [
+                    { icon: "⚡", text: "Pay per use" },
+                    { icon: "♾️", text: "Credits never expire" },
+                    { icon: "🎨", text: "Access all 7 writing styles" },
+                    { icon: "✏️", text: "Free rich text editor" },
+                    { icon: "🔄", text: "Auto refund if process fails" },
+                    { icon: "📜", text: "Unlimited history" },
+                  ]).map((f, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 bg-secondary/40 rounded-xl">
+                      <span className="text-lg">{f.icon}</span>
+                      <span className="text-sm font-medium">{f.text}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Top-up options */}
+                <div className="mb-8">
+                  <p className="text-sm font-medium text-center text-muted-foreground mb-4">
+                    {language === "id" ? "Pilih top-up yang cocok untuk kamu:" : "Choose the right top-up for you:"}
+                  </p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { amount: "Rp 10.000", scripts: "4", label: language === "id" ? "Coba Dulu" : "Try It" },
+                      { amount: "Rp 50.000", scripts: "20", label: language === "id" ? "Reguler" : "Regular" },
+                      { amount: "Rp 200.000", scripts: "80", label: language === "id" ? "Power User" : "Power User" },
+                    ].map((opt, i) => (
+                      <div key={i} className={`text-center p-4 rounded-xl border transition-all ${i === 1 ? "border-primary bg-primary/5 ring-1 ring-primary/20" : "border-border bg-secondary/30 hover:border-primary/40"}`}>
+                        <p className="text-xs text-muted-foreground mb-1">{opt.label}</p>
+                        <p className="text-lg font-bold">{opt.amount}</p>
+                        <p className="text-xs text-primary font-medium mt-1">≈ {opt.scripts} script</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <Link href={isLoggedIn ? "/dashboard/billing" : "/auth/register"}>
+                  <button className="w-full py-4 bg-primary text-white rounded-xl font-bold text-base hover:bg-primary/90 transition-all glow flex items-center justify-center gap-2">
+                    <Zap className="w-5 h-5" />
+                    {isLoggedIn
+                      ? (language === "id" ? "Top Up Credit Sekarang" : "Top Up Credits Now")
+                      : (language === "id" ? "Daftar & Mulai Generate" : "Register & Start Generating")}
+                  </button>
+                </Link>
+
+                {/* Trust signals */}
+                <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> {language === "id" ? "Pembayaran aman via Midtrans" : "Secure payment via Midtrans"}</span>
+                  <span>·</span>
+                  <span>{language === "id" ? "QRIS, Transfer Bank, Kartu Kredit" : "QRIS, Bank Transfer, Credit Card"}</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-center text-sm text-muted-foreground mt-8 flex items-center justify-center gap-1">
-            <Shield className="w-4 h-4" />
-            {language === "id" ? "Pembayaran aman via Midtrans · Kredit dikembalikan jika proses gagal" : "Secure payment via Midtrans · Credits refunded if process fails"}
-          </p>
         </div>
       </section>
 

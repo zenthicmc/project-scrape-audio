@@ -125,7 +125,7 @@ export default function JobDetailPage() {
           </div>
           <span className="text-xs bg-secondary px-2.5 py-1 rounded-lg">{getStyleLabel(job.style)}</span>
           {job.niche && <span className="text-xs bg-secondary px-2.5 py-1 rounded-lg">{job.niche}</span>}
-          <span className="text-xs text-muted-foreground truncate max-w-xs">{job.videoUrl}</span>
+          <a href={job.videoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground truncate max-w-xs">{job.videoUrl}</a>
         </div>
       </div>
 

@@ -37,10 +37,10 @@ interface JobMeta {
 // ─── Progress steps config ────────────────────────────────────────────────────
 
 const STEPS = [
-  { key: "fetching",   icon: Zap,         labelId: "Mengambil transkrip video...", labelEn: "Fetching transcript..." },
-  { key: "processing", icon: Brain,        labelId: "Memproses dengan AI...",       labelEn: "Processing with AI..." },
-  { key: "streaming",  icon: Sparkles,     labelId: "Menulis script...",            labelEn: "Writing script..." },
-  { key: "completed",  icon: CheckCircle,  labelId: "Selesai!",                     labelEn: "Done!" },
+  { key: "fetching", icon: Zap, labelId: "Mengambil transkrip video...", labelEn: "Fetching transcript..." },
+  { key: "processing", icon: Brain, labelId: "Memproses dengan AI...", labelEn: "Processing with AI..." },
+  { key: "streaming", icon: Sparkles, labelId: "Menulis script...", labelEn: "Writing script..." },
+  { key: "completed", icon: CheckCircle, labelId: "Selesai!", labelEn: "Done!" },
 ];
 
 function getStepIndex(status: ProcessingStatus): number {
@@ -113,7 +113,7 @@ export default function ProcessingPage() {
       }
     };
 
-    es.addEventListener("ping", () => {});
+    es.addEventListener("ping", () => { });
 
     es.addEventListener("status", (e) => {
       const data = safeParse("status", e.data);
@@ -383,11 +383,6 @@ export default function ProcessingPage() {
                 </span>
               )}
             </div>
-            {isEditable && (
-              <span className="text-xs text-muted-foreground">
-                {language === "id" ? "✏️ Klik untuk edit" : "✏️ Click to edit"}
-              </span>
-            )}
           </div>
 
           {/* Output content */}

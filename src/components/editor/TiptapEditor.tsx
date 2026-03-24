@@ -125,7 +125,7 @@ export default function TiptapEditor({
   );
 
   return (
-    <div className="tiptap-editor border border-border rounded-xl overflow-hidden bg-card">
+    <div className="tiptap-editor border border-border overflow-hidden bg-card">
       <div className={cn(
         "flex flex-wrap items-center gap-0.5 p-2 border-b border-border bg-secondary/30 transition-opacity",
         !editable && "opacity-50"

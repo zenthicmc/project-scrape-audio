@@ -51,6 +51,11 @@ const STYLE_META: Record<string, { emoji: string; desc_id: string; desc_en: stri
     desc_id: "Detail fitur, spesifikasi & keunggulan",
     desc_en: "Feature details, specs & competitive edge",
   },
+  FOMO_URGENCY: {
+    emoji: "🚀",
+    desc_id: "Bangun rasa FOMO & urgency, dorong action cepat",
+    desc_en: "Build FOMO & urgency, drive quick action",
+  },
 };
 
 export default function ScraperForm({ platform, credits }: ScraperFormProps) {
@@ -119,23 +124,6 @@ export default function ScraperForm({ platform, credits }: ScraperFormProps) {
         <div className="flex items-start gap-2 p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-sm text-destructive">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>{error}</span>
-        </div>
-      )}
-
-      {/* Empty state illustration */}
-      {showEmptyState && (
-        <div className="text-center py-8 px-4 bg-secondary/30 border border-dashed border-border rounded-2xl">
-          <div className="text-5xl mb-3">{isInstagram ? "📸" : "🎵"}</div>
-          <p className="font-medium text-sm mb-1">
-            {language === "id"
-              ? "Masukkan link video untuk mulai"
-              : "Enter a video link to get started"}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {language === "id"
-              ? `Paste URL video ${platformLabel} di bawah ini`
-              : `Paste the ${platformLabel} video URL below`}
-          </p>
         </div>
       )}
 
@@ -229,11 +217,10 @@ export default function ScraperForm({ platform, credits }: ScraperFormProps) {
                   key={style.value}
                   type="button"
                   onClick={() => setForm({ ...form, style: style.value })}
-                  className={`relative flex flex-col items-start gap-1.5 p-3.5 rounded-xl border text-left transition-all ${
-                    isSelected
-                      ? "bg-primary/10 border-primary ring-1 ring-primary/30 shadow-sm"
-                      : "bg-secondary border-border hover:border-primary/40 hover:bg-secondary/80"
-                  }`}
+                  className={`relative flex flex-col items-start gap-1.5 p-3.5 rounded-xl border text-left transition-all ${isSelected
+                    ? "bg-primary/10 border-primary ring-1 ring-primary/30 shadow-sm"
+                    : "bg-secondary border-border hover:border-primary/40 hover:bg-secondary/80"
+                    }`}
                 >
                   {isSelected && (
                     <CheckCircle2 className="absolute top-2.5 right-2.5 w-3.5 h-3.5 text-primary" />

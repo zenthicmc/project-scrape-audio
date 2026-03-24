@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Zap, CheckCircle, Loader2, CreditCard, ArrowUpRight, ArrowDownRight,
@@ -12,6 +12,7 @@ import {
   CREDITS_PER_GENERATION
 } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import Pagination from "@/components/ui/Pagination";
 
 interface CreditTransaction {
   id: string;
@@ -74,7 +75,7 @@ function BillingContent() {
     script.setAttribute("data-client-key", clientKey);
     script.onload = () => setSnapLoaded(true);
     document.head.appendChild(script);
-    return () => { try { document.head.removeChild(script); } catch {} };
+    return () => { try { document.head.removeChild(script); } catch { } };
   }, []);
 
   // Fetch balance and transactions
@@ -156,6 +157,15 @@ function BillingContent() {
       setProcessing(false);
     }
   };
+
+  // Pagination state
+  const [txPage, setTxPage] = useState(1);
+  const TX_PER_PAGE = 10;
+  const totalTxPages = Math.max(1, Math.ceil(transactions.length / TX_PER_PAGE));
+  const paginatedTransactions = useMemo(
+    () => transactions.slice((txPage - 1) * TX_PER_PAGE, txPage * TX_PER_PAGE),
+    [transactions, txPage]
+  );
 
   const getTxIcon = (type: string) => {
     if (type === "TOPUP" || type === "BONUS" || type === "REFUND")
@@ -279,11 +289,10 @@ function BillingContent() {
               <button
                 key={val}
                 onClick={() => handleQuickAmount(val)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                  amount === val
-                    ? "bg-primary text-white border-primary"
-                    : "border-border hover:border-primary/50 hover:bg-secondary text-muted-foreground"
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${amount === val
+                  ? "bg-primary text-white border-primary"
+                  : "border-border hover:border-primary/50 hover:bg-secondary text-muted-foreground"
+                  }`}
               >
                 {formatCurrency(val)}
               </button>
@@ -306,9 +315,8 @@ function BillingContent() {
               value={rawInput}
               onChange={e => handleAmountInput(e.target.value)}
               placeholder="0"
-              className={`w-full bg-secondary border rounded-xl pl-10 pr-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder:text-muted-foreground ${
-                amountError ? "border-destructive" : "border-border"
-              }`}
+              className={`w-full bg-secondary border rounded-xl pl-10 pr-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder:text-muted-foreground ${amountError ? "border-destructive" : "border-border"
+                }`}
             />
           </div>
           {amountError && (
@@ -336,7 +344,7 @@ function BillingContent() {
               </div>
               <div className="text-right">
                 <p className="text-xs text-muted-foreground">
-                  {language === "id" ? "≈" : "≈"} {estimatedGenerations.toLocaleString("id-ID")} {language === "id" ? "script" : "scripts"}
+                  {"≈"} {estimatedGenerations.toLocaleString("id-ID")} {language === "id" ? "script" : "scripts"}
                 </p>
               </div>
             </div>
@@ -388,29 +396,40 @@ function BillingContent() {
             </p>
           </div>
         ) : (
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            {transactions.map((tx, i) => (
-              <div
-                key={tx.id}
-                className={`flex items-center justify-between p-4 ${i < transactions.length - 1 ? "border-b border-border" : ""}`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-                    {getTxIcon(tx.type)}
+          <>
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              {paginatedTransactions.map((tx, i) => (
+                <div
+                  key={tx.id}
+                  className={`flex items-center justify-between p-4 ${i < paginatedTransactions.length - 1 ? "border-b border-border" : ""}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                      {getTxIcon(tx.type)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">
+                        {tx.description || getTxLabel(tx.type)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{formatDate(tx.createdAt)}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {tx.description || getTxLabel(tx.type)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{formatDate(tx.createdAt)}</p>
-                  </div>
+                  <span className={`text-sm font-bold tabular-nums ${getTxColor(tx.type)}`}>
+                    {tx.amount > 0 ? "+" : ""}{tx.amount.toLocaleString("id-ID")} credits
+                  </span>
                 </div>
-                <span className={`text-sm font-bold tabular-nums ${getTxColor(tx.type)}`}>
-                  {tx.amount > 0 ? "+" : ""}{tx.amount.toLocaleString("id-ID")} credits
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            <Pagination
+              page={txPage}
+              totalPages={totalTxPages}
+              onPageChange={setTxPage}
+              totalItems={transactions.length}
+              perPage={TX_PER_PAGE}
+              language={language}
+            />
+          </>
         )}
       </div>
     </div>

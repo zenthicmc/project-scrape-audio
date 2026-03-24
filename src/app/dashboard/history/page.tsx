@@ -5,10 +5,11 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { formatDate, SCRIPT_STYLES } from "@/lib/utils";
 import {
   Clock, CheckCircle, XCircle, Loader2, Instagram, Video, RefreshCw,
-  ChevronLeft, ChevronRight, Eye, RotateCcw
+  Eye, RotateCcw
 } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
+import Pagination from "@/components/ui/Pagination";
 
 interface ScriptJob {
   id: string;
@@ -51,7 +52,7 @@ function HistoryContent() {
         setJobs(data.jobs);
         setTotal(data.total);
       }
-    } catch {}
+    } catch { }
     setLoading(false);
   }, [page]);
 
@@ -195,32 +196,14 @@ function HistoryContent() {
             })}
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6">
-              <p className="text-sm text-muted-foreground">
-                {language === "id"
-                  ? `Menampilkan ${(page - 1) * LIMIT + 1}–${Math.min(page * LIMIT, total)} dari ${total}`
-                  : `Showing ${(page - 1) * LIMIT + 1}–${Math.min(page * LIMIT, total)} of ${total}`}
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="p-2 border border-border rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 text-foreground"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <span className="text-sm font-medium">{page} / {totalPages}</span>
-                <button
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="p-2 border border-border rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 text-foreground"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            totalItems={total}
+            perPage={LIMIT}
+            language={language}
+          />
         </>
       )}
     </div>

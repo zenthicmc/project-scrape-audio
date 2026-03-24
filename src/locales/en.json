@@ -40,7 +40,7 @@
   },
   "landing": {
     "hero": {
-      "badge": "Powered by Claude AI",
+      "badge": "Powered by Modern AI Agent",
       "title": "Turn Viral Videos Into",
       "titleHighlight": "Ready-to-Use Scripts",
       "titleSuffix": "in 60 Seconds",
@@ -97,7 +97,7 @@
       "disclaimer": "* Demo uses sample scripts. Real results use transcripts from your video."
     },
     "styles": {
-      "title": "7 Available Writing Styles",
+      "title": "8 Available Writing Styles",
       "description": "Each style is designed for a different purpose — from emotional storytelling to persuasive PAS.",
       "items": {
         "ORIGINAL": {
@@ -127,6 +127,10 @@
         "FOKUS_FITUR": {
           "label": "Fokus fitur",
           "desc": "Comprehensive feature details and specifications"
+        },
+        "FOMO_URGENCY": {
+          "label": "FOMO / Urgency",
+          "desc": "Build fear of missing out and drive audience to act quickly"
         }
       }
     },
@@ -407,6 +411,7 @@
     "SKEPTICAL_HOOK": "Skeptical hook",
     "FOKUS_BENEFIT": "Fokus benefit",
     "PAS": "PAS",
-    "FOKUS_FITUR": "Fokus fitur"
+    "FOKUS_FITUR": "Fokus fitur",
+    "FOMO_URGENCY": "FOMO / Urgency"
   }
 }
