@@ -70,11 +70,21 @@ async function transcribeVideo(videoUrl: string): Promise<string> {
   }
 
   // Case 2: SSE response (text/event-stream or body starts with "event:")
-  // Parse SSE events to extract transcript from the final result
+  //
+  // API emits two event types:
+  //   event: transcript  → data: { index, total, text, start, end }  (one per segment)
+  //   event: done        → data: { request_id, language, language_probability,
+  //                                total_segments, duration, processing_time, full_text }
+  //
+  // FIX: We must ACCUMULATE all `text` fields from every `transcript` event.
+  // The old code overwrote `transcript` on every event, keeping only the last segment.
+  // Priority: full_text from `done` event (if non-trivial) > accumulated segments.
+
   console.log(`[Worker] Detected SSE response, parsing events...`);
 
   const lines = rawText.split("\n");
-  let transcript = "";
+  const transcriptSegments: string[] = [];  // accumulate each segment
+  let fullText = "";                         // from event: done → full_text
   let currentEventType = "";
   let currentData = "";
 
@@ -84,26 +94,30 @@ async function transcribeVideo(videoUrl: string): Promise<string> {
     } else if (line.startsWith("data:")) {
       currentData = line.slice(5).trim();
 
-      // Try to parse data as JSON
       try {
         const parsed = JSON.parse(currentData);
         console.log(`[Worker] SSE event="${currentEventType}" data keys: [${Object.keys(parsed).join(", ")}]`);
 
-        // Extract transcript from various possible event types / data fields
-        if (parsed.transcript) transcript = parsed.transcript;
-        if (parsed.text) transcript = parsed.text;
-        if (parsed.result) transcript = parsed.result;
+        if (currentEventType === "transcript") {
+          // ACCUMULATE — do NOT overwrite
+          const segText = (parsed.text || "").trim();
+          if (segText) transcriptSegments.push(segText);
 
-        // Check for final status events
-        if (currentEventType === "complete" || currentEventType === "result" || currentEventType === "done") {
-          const finalText = parsed.transcript || parsed.text || parsed.result || parsed.data || "";
-          if (finalText) transcript = finalText;
+        } else if (currentEventType === "done") {
+          // Capture full_text only if it's non-trivial (> 20 chars)
+          const ft = (parsed.full_text || "").trim();
+          if (ft.length > 20) fullText = ft;
+
+        } else {
+          // Other event types — try common field names as fallback
+          const fallback = parsed.transcript || parsed.text || parsed.result || parsed.data || "";
+          if (fallback && fallback.length > fullText.length) fullText = fallback;
         }
       } catch {
-        // Data might be plain text
+        // Plain-text data line
         console.log(`[Worker] SSE event="${currentEventType}" plain data: ${currentData.substring(0, 100)}`);
-        if (currentEventType === "result" || currentEventType === "complete" || currentEventType === "transcript") {
-          transcript = currentData;
+        if ((currentEventType === "result" || currentEventType === "complete") && currentData.length > 20) {
+          fullText = currentData;
         }
       }
     } else if (line.trim() === "") {
@@ -112,6 +126,16 @@ async function transcribeVideo(videoUrl: string): Promise<string> {
       currentData = "";
     }
   }
+
+  // Build final transcript:
+  //   1. Use full_text from done event if it's substantial
+  //   2. Otherwise join all accumulated segments
+  const accumulated = transcriptSegments.join(" ").trim();
+  const transcript = fullText || accumulated;
+
+  console.log(`[Worker] Segments collected: ${transcriptSegments.length}`);
+  console.log(`[Worker] full_text length: ${fullText.length}`);
+  console.log(`[Worker] accumulated length: ${accumulated.length}`);
 
   if (!transcript) {
     console.error(`[Worker] Could not extract transcript from response.`);
