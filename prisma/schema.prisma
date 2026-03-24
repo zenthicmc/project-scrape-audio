@@ -1,0 +1,220 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?
+  passwordHash  String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  creditBalance CreditBalance?
+  creditTransactions CreditTransaction[]
+  scriptJobs    ScriptJob[]
+  paymentTransactions PaymentTransaction[]
+  notifications Notification[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// NextAuth models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Credit system
+model CreditBalance {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  balance   Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CreditTransaction {
+  id          String            @id @default(cuid())
+  userId      String
+  amount      Int               // positive = add, negative = deduct
+  type        CreditTxType
+  description String?
+  referenceId String?           // job id or payment id
+  createdAt   DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum CreditTxType {
+  TOPUP
+  USAGE
+  REFUND
+  BONUS
+}
+
+// Script generation jobs
+model ScriptJob {
+  id              String      @id @default(cuid())
+  userId          String
+  platform        Platform
+  videoUrl        String      @db.Text
+  topic           String?
+  niche           String?
+  style           ScriptStyle
+  status          JobStatus   @default(PENDING)
+  transcript      String?     @db.Text
+  generatedScript String?     @db.Text
+  errorMessage    String?     @db.Text
+  creditsUsed     Int         @default(10)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  completedAt     DateTime?
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+}
+
+enum Platform {
+  INSTAGRAM
+  TIKTOK
+}
+
+enum ScriptStyle {
+  ORIGINAL
+  MIRIP_REFERENSI
+  STORY_TELLING
+  SKEPTICAL_HOOK
+  FOKUS_BENEFIT
+  PAS
+  FOKUS_FITUR
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// Payment transactions (Midtrans)
+model PaymentTransaction {
+  id               String        @id @default(cuid())
+  userId           String
+  orderId          String        @unique
+  amount           BigInt        // in IDR
+  credits          Int           // credits to add
+  status           PaymentStatus @default(PENDING)
+  snapToken        String?       @db.Text
+  paymentMethod    String?
+  midtransResponse String?       @db.Text // JSON string
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  EXPIRED
+  CANCELLED
+}
+
+// In-app notifications
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  title       String
+  message     String           @db.Text
+  type        NotificationType
+  isRead      Boolean          @default(false)
+  referenceId String?          // job id or payment id
+  jobId       String?
+  createdAt   DateTime         @default(now())
+
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  ScriptJob? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+}
+
+enum NotificationType {
+  JOB_COMPLETED
+  JOB_FAILED
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  SYSTEM
+}
+
+// Email verification tokens
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Password reset tokens
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

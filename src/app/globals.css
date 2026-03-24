@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 96%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 262 83% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 47% 12%;
+    --secondary-foreground: 210 40% 85%;
+    --muted: 222 47% 12%;
+    --muted-foreground: 215 20% 50%;
+    --accent: 262 83% 65%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 47% 16%;
+    --input: 222 47% 12%;
+    --ring: 262 83% 65%;
+    --radius: 0.625rem;
+    --sidebar: 222 47% 7%;
+    --sidebar-foreground: 210 40% 85%;
+    --sidebar-primary: 262 83% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 47% 12%;
+    --sidebar-accent-foreground: 210 40% 85%;
+    --sidebar-border: 222 47% 14%;
+    --sidebar-ring: 262 83% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { @apply bg-background; }
+::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-primary/60; }
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #a78bfa, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glow effect */
+.glow {
+  box-shadow: 0 0 40px rgba(139, 92, 246, 0.35);
+}
+.glow:hover {
+  box-shadow: 0 0 60px rgba(139, 92, 246, 0.5);
+}
+
+/* Tiptap editor */
+.tiptap-editor .ProseMirror {
+  outline: none;
+  min-height: 400px;
+  padding: 1rem;
+  line-height: 1.7;
+}
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  @apply text-muted-foreground;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+.tiptap-editor .ProseMirror h1 { @apply text-3xl font-bold mb-3 mt-6; }
+.tiptap-editor .ProseMirror h2 { @apply text-2xl font-semibold mb-2 mt-5; }
+.tiptap-editor .ProseMirror h3 { @apply text-xl font-semibold mb-2 mt-4; }
+.tiptap-editor .ProseMirror p { @apply mb-3; }
+.tiptap-editor .ProseMirror ul { @apply list-disc pl-6 mb-3 space-y-1; }
+.tiptap-editor .ProseMirror ol { @apply list-decimal pl-6 mb-3 space-y-1; }
+.tiptap-editor .ProseMirror blockquote { @apply border-l-4 border-primary pl-4 text-muted-foreground italic my-4; }
+.tiptap-editor .ProseMirror code { @apply bg-secondary px-1.5 py-0.5 rounded text-sm font-mono; }
+.tiptap-editor .ProseMirror pre { @apply bg-secondary p-4 rounded-lg overflow-x-auto my-4; }
+.tiptap-editor .ProseMirror pre code { @apply bg-transparent p-0; }
+.tiptap-editor .ProseMirror strong { @apply font-bold; }
+.tiptap-editor .ProseMirror em { @apply italic; }
+.tiptap-editor .ProseMirror u { @apply underline; }
+.tiptap-editor .ProseMirror a { @apply text-primary underline hover:text-primary/80; }
