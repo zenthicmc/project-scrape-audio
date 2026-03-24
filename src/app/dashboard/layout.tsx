@@ -9,8 +9,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="min-h-screen bg-background flex">
+      {/* Sidebar — part of flex flow, not fixed */}
       <DashboardSidebar />
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
+
+      {/* Main content column — takes remaining width */}
+      <div className="flex-1 flex flex-col min-w-0">
         <DashboardTopbar user={session.user} />
         <main className="flex-1 p-6 overflow-auto">
           {children}

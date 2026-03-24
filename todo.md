@@ -28,3 +28,10 @@
 - [x] UI: Scraper page — ubah style selector dari dropdown ke selectable cards
 - [x] UI: Scraper page — loading state saat generate (spinner + text)
 - [x] UI: Scraper page — empty state dengan ilustrasi ringan
+
+## UI Bug Fix — Sidebar & Header Alignment (Round 4)
+
+- [x] FIX: Sidebar dan header border tidak sejajar — gunakan flex layout yang benar
+- [x] FIX: Sidebar warna tidak konsisten dengan header — samakan ke bg-background (white)
+- [x] FIX: Sidebar harus h-screen, top-0, tidak ada offset dari header
+- [x] FIX: Border sidebar (border-r) dan header (border-b) harus warna & ketebalan sama
