@@ -85,21 +85,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
     async signIn({ user, account }) {
-      // Auto verify email for OAuth users
-      if (account?.provider === "google" && user.email) {
+      // Auto verify email for OAuth users (only if user already exists)
+      if (account?.provider === "google" && user.email && user.id) {
         await prisma.user.update({
-          where: { email: user.email },
+          where: { id: user.id },
           data: { emailVerified: new Date() },
-        }).catch(() => {});
-
-        // Create credit balance if not exists
-        await prisma.creditBalance.upsert({
-          where: { userId: user.id! },
-          create: { userId: user.id!, balance: 50 }, // 50 free credits on signup
-          update: {},
-        }).catch(() => {});
+        }).catch(() => { });
       }
       return true;
+    },
+  },
+  events: {
+    // Give new users 50 free credits after account creation
+    async createUser({ user }) {
+      if (user.id) {
+        await prisma.creditBalance.create({
+          data: { userId: user.id, balance: 50 },
+        }).catch(() => { });
+      }
     },
   },
 });
