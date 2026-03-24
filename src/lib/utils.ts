@@ -9,6 +9,15 @@ export const CREDITS_PER_GENERATION = parseInt(
   process.env.NEXT_PUBLIC_CREDITS_PER_GENERATION || "10"
 );
 
+// Credit rate: how many credits per Rp 1.000
+// Default: Rp 1.000 = 2 credits  (Rp 10.000 = 20 credits, Rp 50.000 = 100 credits)
+export const CREDITS_PER_THOUSAND_IDR = parseInt(
+  process.env.NEXT_PUBLIC_CREDITS_PER_THOUSAND_IDR || "2"
+);
+
+export const MIN_TOPUP_AMOUNT = 10000;  // Rp 10.000
+export const MAX_TOPUP_AMOUNT = 5000000; // Rp 5.000.000
+
 export const CREDIT_PACKAGES = [
   {
     id: "starter",

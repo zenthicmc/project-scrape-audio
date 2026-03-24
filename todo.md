@@ -35,3 +35,14 @@
 - [x] FIX: Sidebar warna tidak konsisten dengan header — samakan ke bg-background (white)
 - [x] FIX: Sidebar harus h-screen, top-0, tidak ada offset dari header
 - [x] FIX: Border sidebar (border-r) dan header (border-b) harus warna & ketebalan sama
+
+## Bug Fix & Feature Update — Profile & Billing (Round 5)
+
+- [x] BUG: Profile update tidak realtime — fix session.update() setelah API call
+- [x] BUG: API profile update harus return latest user data
+- [x] FEATURE: Hapus sistem subscription dari billing page
+- [x] FEATURE: Ganti dengan custom amount top-up (input nominal bebas)
+- [x] FEATURE: Tampilkan estimasi credit dari nominal yang diinput
+- [x] FEATURE: Validasi minimum top-up Rp 10.000, input numeric only
+- [x] FEATURE: Update API payment/create untuk terima nominal bebas
+- [x] FEATURE: Tampilkan riwayat top-up dan riwayat penggunaan credit

@@ -30,12 +30,14 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
       });
+      const data = await res.json();
       if (res.ok) {
-        await update({ name });
+        // Trigger NextAuth session.update() with latest values from API response
+        // This updates the JWT token so the new name is reflected everywhere immediately
+        await update({ name: data.user?.name ?? name });
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       } else {
-        const data = await res.json();
         setError(data.error || t("common.errors.generic"));
       }
     } catch {

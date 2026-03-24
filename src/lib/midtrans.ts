@@ -28,7 +28,7 @@ export async function createSnapTransaction(params: CreateTransactionParams) {
         id: `credits-${credits}`,
         price: amount,
         quantity: 1,
-        name: `ScriptAI Credits — ${credits} Credits`,
+        name: `ScriptAI Top Up — ${credits} Credits`,
       },
     ],
     customer_details: {
