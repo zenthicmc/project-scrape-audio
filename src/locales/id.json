@@ -69,10 +69,22 @@
       "title": "Dari URL ke Script dalam 60 Detik",
       "description": "ScriptAI mengekstrak transkrip video secara otomatis, lalu Claude AI memparafrase dengan gaya bahasa pilihanmu.",
       "steps": [
-        { "title": "Tempel URL", "desc": "Copy URL video Instagram atau TikTok, tempel di ScriptAI" },
-        { "title": "Pilih Gaya", "desc": "Pilih dari 7 gaya bahasa: storytelling, PAS, skeptical hook, dan lainnya" },
-        { "title": "Generate", "desc": "AI bekerja dalam 30-90 detik untuk membuat script yang unik" },
-        { "title": "Edit & Pakai", "desc": "Edit di rich text editor, lalu langsung pakai untuk kontenmu" }
+        {
+          "title": "Tempel URL",
+          "desc": "Copy URL video Instagram atau TikTok, tempel di ScriptAI"
+        },
+        {
+          "title": "Pilih Gaya",
+          "desc": "Pilih dari 7 gaya bahasa: storytelling, PAS, skeptical hook, dan lainnya"
+        },
+        {
+          "title": "Generate",
+          "desc": "AI bekerja dalam 30-90 detik untuk membuat script yang unik"
+        },
+        {
+          "title": "Edit & Pakai",
+          "desc": "Edit di rich text editor, lalu langsung pakai untuk kontenmu"
+        }
       ]
     },
     "demo": {
@@ -88,13 +100,34 @@
       "title": "7 Gaya Bahasa yang Tersedia",
       "description": "Setiap gaya dirancang untuk tujuan yang berbeda — dari storytelling yang emosional hingga PAS yang persuasif.",
       "items": {
-        "ORIGINAL": { "label": "Original", "desc": "Pertahankan gaya dan tone asli dari konten referensi" },
-        "MIRIP_REFERENSI": { "label": "Mirip referensi", "desc": "Sesuaikan dengan gaya referensi yang diberikan" },
-        "STORY_TELLING": { "label": "Story telling", "desc": "Narasi berbasis cerita yang engaging dan emosional" },
-        "SKEPTICAL_HOOK": { "label": "Skeptical hook", "desc": "Mulai dengan pertanyaan yang menantang kepercayaan umum" },
-        "FOKUS_BENEFIT": { "label": "Fokus benefit", "desc": "Tonjolkan manfaat konkret dengan data dan angka" },
-        "PAS": { "label": "PAS", "desc": "Problem-Agitation-Solution framework yang terbukti efektif" },
-        "FOKUS_FITUR": { "label": "Fokus fitur", "desc": "Detail fitur dan spesifikasi secara komprehensif" }
+        "ORIGINAL": {
+          "label": "Original",
+          "desc": "Pertahankan gaya dan tone asli dari konten referensi"
+        },
+        "MIRIP_REFERENSI": {
+          "label": "Mirip referensi",
+          "desc": "Sesuaikan dengan gaya referensi yang diberikan"
+        },
+        "STORY_TELLING": {
+          "label": "Story telling",
+          "desc": "Narasi berbasis cerita yang engaging dan emosional"
+        },
+        "SKEPTICAL_HOOK": {
+          "label": "Skeptical hook",
+          "desc": "Mulai dengan pertanyaan yang menantang kepercayaan umum"
+        },
+        "FOKUS_BENEFIT": {
+          "label": "Fokus benefit",
+          "desc": "Tonjolkan manfaat konkret dengan data dan angka"
+        },
+        "PAS": {
+          "label": "PAS",
+          "desc": "Problem-Agitation-Solution framework yang terbukti efektif"
+        },
+        "FOKUS_FITUR": {
+          "label": "Fokus fitur",
+          "desc": "Detail fitur dan spesifikasi secara komprehensif"
+        }
       }
     },
     "comparison": {
@@ -305,10 +338,11 @@
       "paymentSuccess": "Pembayaran berhasil! Kredit telah ditambahkan ke akun Anda.",
       "paymentPending": "Pembayaran sedang diproses. Kredit akan ditambahkan setelah konfirmasi.",
       "paymentError": "Pembayaran gagal. Silakan coba lagi.",
-      "errors": { "generic": "Terjadi kesalahan. Coba lagi." },
+      "errors": {
+        "generic": "Terjadi kesalahan. Coba lagi."
+      },
       "balance": "Saldo Kredit",
       "credits": "kredit",
-      "topupTitle": "Top Up Kredit",
       "topupSubtitle": "Pilih paket kredit yang sesuai kebutuhan Anda",
       "buyBtn": "Beli Sekarang",
       "popular": "Terpopuler",

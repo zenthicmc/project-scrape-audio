@@ -69,10 +69,22 @@
       "title": "From URL to Script in 60 Seconds",
       "description": "ScriptAI automatically extracts the video transcript, then Claude AI paraphrases it in your chosen writing style.",
       "steps": [
-        { "title": "Paste URL", "desc": "Copy the Instagram or TikTok video URL and paste it into ScriptAI" },
-        { "title": "Choose Style", "desc": "Pick from 7 writing styles: storytelling, PAS, skeptical hook, and more" },
-        { "title": "Generate", "desc": "AI works in 30-90 seconds to create a unique script" },
-        { "title": "Edit & Use", "desc": "Edit in the rich text editor, then use it for your content" }
+        {
+          "title": "Paste URL",
+          "desc": "Copy the Instagram or TikTok video URL and paste it into ScriptAI"
+        },
+        {
+          "title": "Choose Style",
+          "desc": "Pick from 7 writing styles: storytelling, PAS, skeptical hook, and more"
+        },
+        {
+          "title": "Generate",
+          "desc": "AI works in 30-90 seconds to create a unique script"
+        },
+        {
+          "title": "Edit & Use",
+          "desc": "Edit in the rich text editor, then use it for your content"
+        }
       ]
     },
     "demo": {
@@ -88,13 +100,34 @@
       "title": "7 Available Writing Styles",
       "description": "Each style is designed for a different purpose — from emotional storytelling to persuasive PAS.",
       "items": {
-        "ORIGINAL": { "label": "Original", "desc": "Preserve the original style and tone of the reference content" },
-        "MIRIP_REFERENSI": { "label": "Mirip referensi", "desc": "Adapt to the provided reference style" },
-        "STORY_TELLING": { "label": "Story telling", "desc": "Engaging and emotional narrative-based storytelling" },
-        "SKEPTICAL_HOOK": { "label": "Skeptical hook", "desc": "Start with a question that challenges common beliefs" },
-        "FOKUS_BENEFIT": { "label": "Fokus benefit", "desc": "Highlight concrete benefits with data and numbers" },
-        "PAS": { "label": "PAS", "desc": "Problem-Agitation-Solution framework proven to be effective" },
-        "FOKUS_FITUR": { "label": "Fokus fitur", "desc": "Comprehensive feature details and specifications" }
+        "ORIGINAL": {
+          "label": "Original",
+          "desc": "Preserve the original style and tone of the reference content"
+        },
+        "MIRIP_REFERENSI": {
+          "label": "Mirip referensi",
+          "desc": "Adapt to the provided reference style"
+        },
+        "STORY_TELLING": {
+          "label": "Story telling",
+          "desc": "Engaging and emotional narrative-based storytelling"
+        },
+        "SKEPTICAL_HOOK": {
+          "label": "Skeptical hook",
+          "desc": "Start with a question that challenges common beliefs"
+        },
+        "FOKUS_BENEFIT": {
+          "label": "Fokus benefit",
+          "desc": "Highlight concrete benefits with data and numbers"
+        },
+        "PAS": {
+          "label": "PAS",
+          "desc": "Problem-Agitation-Solution framework proven to be effective"
+        },
+        "FOKUS_FITUR": {
+          "label": "Fokus fitur",
+          "desc": "Comprehensive feature details and specifications"
+        }
       }
     },
     "comparison": {
@@ -305,10 +338,11 @@
       "paymentSuccess": "Payment successful! Credits have been added to your account.",
       "paymentPending": "Payment is being processed. Credits will be added after confirmation.",
       "paymentError": "Payment failed. Please try again.",
-      "errors": { "generic": "An error occurred. Please try again." },
+      "errors": {
+        "generic": "An error occurred. Please try again."
+      },
       "balance": "Credit Balance",
       "credits": "credits",
-      "topupTitle": "Top Up Credits",
       "topupSubtitle": "Choose a credit package that fits your needs",
       "buyBtn": "Buy Now",
       "popular": "Most Popular",

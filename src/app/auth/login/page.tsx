@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -9,7 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
 import LanguageToggle from "@/components/LanguageToggle";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
@@ -41,8 +41,8 @@ export default function LoginPage() {
         result.error === "CredentialsSignin"
           ? t("auth.login.errors.invalidCredentials")
           : result.error === "EmailNotVerified"
-          ? t("auth.login.errors.emailNotVerified")
-          : t("auth.login.errors.generic")
+            ? t("auth.login.errors.emailNotVerified")
+            : t("auth.login.errors.generic")
       );
       setLoading(false);
     } else {
@@ -57,7 +57,6 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-md">
-      {/* Theme & Language toggles */}
       <div className="flex justify-end gap-2 mb-6">
         <LanguageToggle size="sm" />
         <ThemeToggle size="sm" />
@@ -73,7 +72,6 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Google OAuth */}
         <button
           onClick={handleGoogleSignIn}
           disabled={googleLoading}
@@ -155,5 +153,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
