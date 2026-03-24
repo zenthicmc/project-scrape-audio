@@ -13,11 +13,10 @@ import ThemeToggle from "@/components/ThemeToggle";
 import LanguageToggle from "@/components/LanguageToggle";
 
 const STYLE_OPTIONS = [
-  { value: "STORY_TELLING" },
-  { value: "SKEPTICAL_HOOK" },
-  { value: "FOKUS_BENEFIT" },
-  { value: "PAS" },
-  { value: "FOMO_URGENCY" },
+  { value: "STORY_TELLING", emoji: "📖" },
+  { value: "SKEPTICAL_HOOK", emoji: "❓" },
+  { value: "FOKUS_BENEFIT", emoji: "✨" },
+  { value: "PAS", emoji: "🎯" },
 ];
 
 const ALL_STYLE_KEYS = [
@@ -275,12 +274,13 @@ export default function LandingPage() {
                     <button
                       key={s.value}
                       onClick={() => setDemoStyle(s.value)}
-                      className={`px-3 py-2.5 rounded-lg text-xs font-medium border transition-all ${demoStyle === s.value
+                      className={`px-3 py-2.5 rounded-lg text-xs font-medium border transition-all flex items-center justify-center gap-1.5 ${demoStyle === s.value
                         ? "bg-primary text-white border-primary"
                         : "bg-secondary border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
                         }`}
                     >
-                      {t(`styles.${s.value}`)}
+                      <span className="text-sm">{s.emoji}</span>
+                      <span>{t(`styles.${s.value}`)}</span>
                     </button>
                   ))}
                 </div>
@@ -505,14 +505,14 @@ export default function LandingPage() {
                   {(language === "id" ? [
                     { icon: "⚡", text: "Bayar sesuai pemakaian" },
                     { icon: "♾️", text: "Credit tidak pernah expired" },
-                    { icon: "🎨", text: "Akses semua 7 gaya bahasa" },
+                    { icon: "🎨", text: "Akses semua 8 gaya bahasa" },
                     { icon: "✏️", text: "Rich text editor gratis" },
                     { icon: "🔄", text: "Refund otomatis jika gagal" },
                     { icon: "📜", text: "History tanpa batas" },
                   ] : [
                     { icon: "⚡", text: "Pay per use" },
                     { icon: "♾️", text: "Credits never expire" },
-                    { icon: "🎨", text: "Access all 7 writing styles" },
+                    { icon: "🎨", text: "Access all 8 writing styles" },
                     { icon: "✏️", text: "Free rich text editor" },
                     { icon: "🔄", text: "Auto refund if process fails" },
                     { icon: "📜", text: "Unlimited history" },
