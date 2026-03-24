@@ -13,10 +13,10 @@ export default function DashboardSidebar() {
   const { t } = useLanguage();
 
   const PLATFORM_ITEMS = [
-    { href: "/dashboard/instagram", icon: Instagram, label: "📸 Instagram", emoji: "📸" },
-    { href: "/dashboard/tiktok", icon: Music2, label: "🎵 TikTok", emoji: "🎵" },
-    { href: "/dashboard/youtube", icon: Youtube, label: "🎬 YouTube Shorts", emoji: "🎬" },
-    { href: "/dashboard/linkedin", icon: Linkedin, label: "💼 LinkedIn", emoji: "💼" },
+    { href: "/dashboard/instagram", icon: Instagram, label: "Instagram" },
+    { href: "/dashboard/tiktok", icon: Music2, label: "TikTok" },
+    { href: "/dashboard/youtube", icon: Youtube, label: "YouTube Shorts" },
+    { href: "/dashboard/linkedin", icon: Linkedin, label: "LinkedIn" },
   ];
 
   const SidebarContent = () => (
@@ -66,8 +66,8 @@ export default function DashboardSidebar() {
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               )}
             >
-              <span className="text-base leading-none w-4 text-center shrink-0">{item.emoji}</span>
-              <span>{item.label.replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]\s*/u, "")}</span>
+              <item.icon className="w-4 h-4 shrink-0" />
+              <span>{item.label}</span>
             </Link>
           );
         })}

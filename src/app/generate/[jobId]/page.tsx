@@ -37,7 +37,7 @@ interface JobMeta {
 // ─── Progress steps config ────────────────────────────────────────────────────
 
 const STEPS = [
-  { key: "fetching", icon: Zap, labelId: "Mengambil transkrip video...", labelEn: "Fetching transcript..." },
+  { key: "fetching", icon: Zap, labelId: "Mengambil transkrip...", labelEn: "Fetching transcript..." },
   { key: "processing", icon: Brain, labelId: "Memproses dengan AI...", labelEn: "Processing with AI..." },
   { key: "streaming", icon: Sparkles, labelId: "Menulis script...", labelEn: "Writing script..." },
   { key: "completed", icon: CheckCircle, labelId: "Selesai!", labelEn: "Done!" },
@@ -120,7 +120,7 @@ export default function ProcessingPage() {
       if (!data) return;
       const s = data.status as string;
       setJobMeta({
-        platform: data.platform as string,
+        platform: data.platform ? data.platform as string : "PASTE_TEXT",
         style: data.style as string,
         topic: data.topic as string,
         videoUrl: data.videoUrl as string,
@@ -277,7 +277,7 @@ export default function ProcessingPage() {
           </p>
           {(jobMeta.platform || jobMeta.style) && (
             <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
-              {jobMeta.platform && <span className="px-2 py-1 bg-secondary rounded-md text-xs">{platformLabel}</span>}
+              {jobMeta.platform ? <span className="px-2 py-1 bg-secondary rounded-md text-xs">{platformLabel}</span> : <span className="px-2 py-1 bg-secondary rounded-md text-xs">PASTED TEXT</span>}
               {jobMeta.style && <span className="px-2 py-1 bg-secondary rounded-md text-xs">{jobMeta.style.replace(/_/g, " ")}</span>}
               {jobMeta.topic && <span className="px-2 py-1 bg-secondary rounded-md text-xs truncate max-w-40">{jobMeta.topic}</span>}
             </div>

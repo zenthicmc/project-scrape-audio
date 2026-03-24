@@ -219,7 +219,7 @@ ATURAN PENTING:
 5. Gunakan emoji secara strategis untuk meningkatkan engagement
 6. Panjang script: 150-400 kata
 7. JANGAN gunakan label bagian seperti "HOOK:", "BODY:", "CTA:", atau label struktural lainnya
-8. JANGAN gunakan garis pemisah atau karakter transisi seperti ---, --, ===, atau karakter pemisah lainnya
+8. JANGAN gunakan garis pemisah atau karakter transisi seperti ---, --, ===, —, atau karakter pemisah lainnya di dalam kalimat maupun antar paragraf
 9. SELALU gunakan format Markdown untuk output: gunakan ## untuk heading, **bold** untuk penekanan, - untuk bullet list, dan paragraf terpisah untuk setiap bagian
 10. Script harus mengalir natural tanpa penanda struktural yang terlihat oleh pembaca`;
 
