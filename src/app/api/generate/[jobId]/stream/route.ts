@@ -84,6 +84,7 @@ export async function GET(
               topic: true,
               niche: true,
               videoUrl: true,
+              linkedinText: true,
               createdAt: true,
               completedAt: true,
             },
@@ -105,6 +106,8 @@ export async function GET(
               style: job.style,
               topic: job.topic,
               videoUrl: job.videoUrl,
+              // LinkedIn paste text mode: skip transcription step on frontend
+              isLinkedInPaste: job.platform === "LINKEDIN" && !!job.linkedinText && job.linkedinText.trim().length > 10,
             });
           }
 

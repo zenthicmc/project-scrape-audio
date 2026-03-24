@@ -32,16 +32,29 @@ interface JobMeta {
   style?: string;
   topic?: string;
   videoUrl?: string;
+  isLinkedInPaste?: boolean;
 }
 
 // ─── Progress steps config ────────────────────────────────────────────────────
 
-const STEPS = [
-  { key: "fetching", icon: Zap, labelId: "Mengambil transkrip...", labelEn: "Fetching transcript..." },
-  { key: "processing", icon: Brain, labelId: "Memproses dengan AI...", labelEn: "Processing with AI..." },
-  { key: "streaming", icon: Sparkles, labelId: "Menulis script...", labelEn: "Writing script..." },
-  { key: "completed", icon: CheckCircle, labelId: "Selesai!", labelEn: "Done!" },
-];
+function buildSteps(isLinkedInPaste: boolean) {
+  return [
+    {
+      key: "fetching",
+      icon: Zap,
+      labelId: isLinkedInPaste ? "Menyiapkan konten..." : "Mengambil transkrip video...",
+      labelEn: isLinkedInPaste ? "Preparing content..." : "Fetching transcript...",
+    },
+    { key: "processing", icon: Brain, labelId: "Memproses dengan AI...", labelEn: "Processing with AI..." },
+    {
+      key: "streaming",
+      icon: Sparkles,
+      labelId: isLinkedInPaste ? "Menulis ulang konten..." : "Menulis script...",
+      labelEn: isLinkedInPaste ? "Rewriting content..." : "Writing script...",
+    },
+    { key: "completed", icon: CheckCircle, labelId: "Selesai!", labelEn: "Done!" },
+  ];
+}
 
 function getStepIndex(status: ProcessingStatus): number {
   if (status === "fetching" || status === "idle") return 0;
@@ -80,6 +93,7 @@ export default function ProcessingPage() {
   const [jobMeta, setJobMeta] = useState<JobMeta>({});
   const [error, setError] = useState("");
   const [isRetrying, setIsRetrying] = useState(false);
+  const [isLinkedInPaste, setIsLinkedInPaste] = useState(false);
 
   const outputRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -119,13 +133,17 @@ export default function ProcessingPage() {
       const data = safeParse("status", e.data);
       if (!data) return;
       const s = data.status as string;
+      const linkedInPaste = !!data.isLinkedInPaste;
+      setIsLinkedInPaste(linkedInPaste);
       setJobMeta({
         platform: data.platform ? data.platform as string : "PASTE_TEXT",
         style: data.style as string,
         topic: data.topic as string,
         videoUrl: data.videoUrl as string,
+        isLinkedInPaste: linkedInPaste,
       });
-      if (s === "PENDING") setStatus("fetching");
+      // LinkedIn paste: skip "fetching" step — go straight to "processing"
+      if (s === "PENDING") setStatus(linkedInPaste ? "processing" : "fetching");
       else if (s === "PROCESSING") setStatus("processing");
     });
 
@@ -207,10 +225,15 @@ export default function ProcessingPage() {
     }
   };
 
+  const STEPS = buildSteps(isLinkedInPaste);
   const currentStepIndex = getStepIndex(status);
   const isActive = status !== "completed" && status !== "failed" && status !== "timeout";
   const hasOutput = streamedText.length > 0;
-  const platformLabel = jobMeta.platform === "INSTAGRAM" ? "Instagram" : jobMeta.platform === "TIKTOK" ? "TikTok" : "";
+  const platformLabel =
+    jobMeta.platform === "INSTAGRAM" ? "Instagram" :
+    jobMeta.platform === "TIKTOK" ? "TikTok" :
+    jobMeta.platform === "YOUTUBE" ? "YouTube Shorts" :
+    jobMeta.platform === "LINKEDIN" ? "LinkedIn" : "";
   const isEditable = status === "completed";
 
   return (

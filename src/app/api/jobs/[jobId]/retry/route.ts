@@ -72,6 +72,8 @@ export async function POST(
           platform: originalJob.platform,
           topic: originalJob.topic,
           niche: originalJob.niche,
+          targetAudience: originalJob.targetAudience,
+          linkedinText: originalJob.linkedinText,
           style: originalJob.style,
           status: "PENDING",
           creditsUsed: CREDITS_PER_GENERATION,
@@ -99,6 +101,8 @@ export async function POST(
       platform: originalJob.platform,
       topic: originalJob.topic ?? undefined,
       niche: originalJob.niche ?? undefined,
+      targetAudience: originalJob.targetAudience ?? undefined,
+      linkedinText: originalJob.linkedinText ?? undefined,
       style: originalJob.style,
     });
 
