@@ -199,23 +199,43 @@ async function processJob(job: Job<ScriptJobData>) {
       },
     });
 
-    // BUG FIX #3: Safe refund — only once per job, prevents credit exploit
-    const job = await prisma.scriptJob.findUnique({ where: { id: jobId } });
-    await safeRefundCredits(jobId, userId, job?.creditsUsed ?? 10);
+    // Refund credits — only once per job (prevents exploit)
+    const failedJob = await prisma.scriptJob.findUnique({ where: { id: jobId } });
+    if (failedJob && !failedJob.creditRefunded) {
+      await prisma.$transaction([
+        prisma.scriptJob.update({
+          where: { id: jobId },
+          data: { creditRefunded: true },
+        }),
+        prisma.creditBalance.update({
+          where: { userId },
+          data: { balance: { increment: failedJob.creditsUsed } },
+        }),
+        prisma.creditTransaction.create({
+          data: {
+            userId,
+            amount: failedJob.creditsUsed,
+            type: "REFUND",
+            description: "Refund karena proses gagal",
+            referenceId: jobId,
+          },
+        }),
+      ]);
+    }
 
     // Create failure notification
     await prisma.notification.create({
       data: {
         userId,
         title: "Proses Gagal — Kredit Dikembalikan",
-        message: `Maaf, proses script gagal: ${errorMessage}. Kredit telah dikembalikan ke akun Anda.`,
+        message: `Maaf, proses script gagal: ${errorMessage}. ${failedJob?.creditsUsed ?? 10} kredit telah dikembalikan ke akun Anda.`,
         type: "JOB_FAILED",
         referenceId: jobId,
         jobId,
       },
     });
 
-    // BUG FIX #1: Do NOT re-throw the error.
+    // Do NOT re-throw — prevents BullMQ from retrying error.
     // Re-throwing causes BullMQ to mark the job as failed and potentially retry.
     // Since attempts=1, we handle failure gracefully here without re-throwing.
     console.log(`[Worker] Job ${jobId} handled gracefully — no retry will occur`);

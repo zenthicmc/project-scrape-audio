@@ -15,7 +15,7 @@ const CREDITS_PER_GENERATION = parseInt(process.env.CREDITS_PER_GENERATION || "1
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
     const session = await auth();
@@ -23,7 +23,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { jobId } = params;
+    const { jobId } = await params;
 
     // Fetch the original failed job
     const originalJob = await prisma.scriptJob.findUnique({
