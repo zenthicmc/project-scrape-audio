@@ -37,20 +37,24 @@ interface JobMeta {
 
 // ─── Progress steps config ────────────────────────────────────────────────────
 
-function buildSteps(isLinkedInPaste: boolean) {
+type StepMode = "video" | "linkedin_paste" | "linkedin_url";
+
+function buildSteps(mode: StepMode) {
+  const isLinkedInPaste = mode === "linkedin_paste";
+  const isLinkedInUrl = mode === "linkedin_url";
   return [
     {
       key: "fetching",
       icon: Zap,
-      labelId: isLinkedInPaste ? "Menyiapkan konten..." : "Mengambil transkrip video...",
-      labelEn: isLinkedInPaste ? "Preparing content..." : "Fetching transcript...",
+      labelId: isLinkedInPaste ? "Menyiapkan konten..." : isLinkedInUrl ? "Scraping post LinkedIn..." : "Mengambil transkrip video...",
+      labelEn: isLinkedInPaste ? "Preparing content..." : isLinkedInUrl ? "Scraping LinkedIn post..." : "Fetching transcript...",
     },
     { key: "processing", icon: Brain, labelId: "Memproses dengan AI...", labelEn: "Processing with AI..." },
     {
       key: "streaming",
       icon: Sparkles,
-      labelId: isLinkedInPaste ? "Menulis ulang konten..." : "Menulis script...",
-      labelEn: isLinkedInPaste ? "Rewriting content..." : "Writing script...",
+      labelId: (isLinkedInPaste || isLinkedInUrl) ? "Menulis ulang konten..." : "Menulis script...",
+      labelEn: (isLinkedInPaste || isLinkedInUrl) ? "Rewriting content..." : "Writing script...",
     },
     { key: "completed", icon: CheckCircle, labelId: "Selesai!", labelEn: "Done!" },
   ];
@@ -93,7 +97,7 @@ export default function ProcessingPage() {
   const [jobMeta, setJobMeta] = useState<JobMeta>({});
   const [error, setError] = useState("");
   const [isRetrying, setIsRetrying] = useState(false);
-  const [isLinkedInPaste, setIsLinkedInPaste] = useState(false);
+  const [stepMode, setStepMode] = useState<StepMode>("video");
 
   const outputRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -134,12 +138,19 @@ export default function ProcessingPage() {
       if (!data) return;
       const s = data.status as string;
       const linkedInPaste = !!data.isLinkedInPaste;
-      setIsLinkedInPaste(linkedInPaste);
+      const platform = data.platform as string;
+      const videoUrl = data.videoUrl as string;
+      // Determine step mode
+      let mode: StepMode = "video";
+      if (platform === "LINKEDIN") {
+        mode = linkedInPaste ? "linkedin_paste" : "linkedin_url";
+      }
+      setStepMode(mode);
       setJobMeta({
-        platform: data.platform ? data.platform as string : "PASTE_TEXT",
+        platform: platform || "PASTE_TEXT",
         style: data.style as string,
         topic: data.topic as string,
-        videoUrl: data.videoUrl as string,
+        videoUrl: videoUrl,
         isLinkedInPaste: linkedInPaste,
       });
       // LinkedIn paste: skip "fetching" step — go straight to "processing"
@@ -225,7 +236,7 @@ export default function ProcessingPage() {
     }
   };
 
-  const STEPS = buildSteps(isLinkedInPaste);
+  const STEPS = buildSteps(stepMode);
   const currentStepIndex = getStepIndex(status);
   const isActive = status !== "completed" && status !== "failed" && status !== "timeout";
   const hasOutput = streamedText.length > 0;
