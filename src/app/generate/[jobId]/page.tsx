@@ -347,10 +347,6 @@ export default function ProcessingPage() {
       }
     };
 
-    es.onmessage = (e) => {
-      console.warn(`[SSE onmessage] unhandled:`, e.data?.substring?.(0, 100));
-    };
-
     es.addEventListener("ping", () => {});
 
     es.addEventListener("status", (e) => {
