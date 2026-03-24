@@ -31,6 +31,8 @@ const STYLE_PROMPTS: Record<string, string> = {
 };
 
 async function transcribeVideo(videoUrl: string): Promise<string> {
+  console.log(`[Worker] Calling transcription API for: ${videoUrl}`);
+
   const response = await fetch("https://att.awbs.network/transcribe", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -38,11 +40,88 @@ async function transcribeVideo(videoUrl: string): Promise<string> {
   });
 
   if (!response.ok) {
-    throw new Error(`Transcription failed: ${response.status} ${response.statusText}`);
+    const errorBody = await response.text().catch(() => "");
+    console.error(`[Worker] Transcription API error: ${response.status}`, errorBody.substring(0, 500));
+    throw new Error(`Transcription failed (${response.status}): ${errorBody.substring(0, 200)}`);
   }
 
-  const data = await response.json();
-  return data.transcript || data.text || data.result || "";
+  const contentType = response.headers.get("content-type") || "";
+  const rawText = await response.text();
+
+  console.log(`[Worker] Transcription response content-type: ${contentType}`);
+  console.log(`[Worker] Transcription response length: ${rawText.length}`);
+  console.log(`[Worker] Transcription response preview: ${rawText.substring(0, 500)}`);
+
+  // Determine if this is an SSE response by checking both content-type AND body prefix
+  const looksLikeSSE = rawText.trimStart().startsWith("event:") || rawText.trimStart().startsWith("data:");
+
+  // Case 1: Standard JSON response (not SSE)
+  if (contentType.includes("application/json") && !looksLikeSSE) {
+    console.log(`[Worker] Parsing as standard JSON response`);
+    try {
+      const data = JSON.parse(rawText);
+      console.log(`[Worker] JSON parsed OK, keys: [${Object.keys(data).join(", ")}]`);
+      return data.transcript || data.text || data.result || "";
+    } catch (err) {
+      console.error(`[Worker] Failed to parse JSON response:`, err);
+      console.error(`[Worker] Full raw response:\n${rawText}`);
+      throw new Error(`Failed to parse transcription JSON. Raw (first 300 chars): ${rawText.substring(0, 300)}`);
+    }
+  }
+
+  // Case 2: SSE response (text/event-stream or body starts with "event:")
+  // Parse SSE events to extract transcript from the final result
+  console.log(`[Worker] Detected SSE response, parsing events...`);
+
+  const lines = rawText.split("\n");
+  let transcript = "";
+  let currentEventType = "";
+  let currentData = "";
+
+  for (const line of lines) {
+    if (line.startsWith("event:")) {
+      currentEventType = line.slice(6).trim();
+    } else if (line.startsWith("data:")) {
+      currentData = line.slice(5).trim();
+
+      // Try to parse data as JSON
+      try {
+        const parsed = JSON.parse(currentData);
+        console.log(`[Worker] SSE event="${currentEventType}" data keys: [${Object.keys(parsed).join(", ")}]`);
+
+        // Extract transcript from various possible event types / data fields
+        if (parsed.transcript) transcript = parsed.transcript;
+        if (parsed.text) transcript = parsed.text;
+        if (parsed.result) transcript = parsed.result;
+
+        // Check for final status events
+        if (currentEventType === "complete" || currentEventType === "result" || currentEventType === "done") {
+          const finalText = parsed.transcript || parsed.text || parsed.result || parsed.data || "";
+          if (finalText) transcript = finalText;
+        }
+      } catch {
+        // Data might be plain text
+        console.log(`[Worker] SSE event="${currentEventType}" plain data: ${currentData.substring(0, 100)}`);
+        if (currentEventType === "result" || currentEventType === "complete" || currentEventType === "transcript") {
+          transcript = currentData;
+        }
+      }
+    } else if (line.trim() === "") {
+      // Reset for next event block
+      currentEventType = "";
+      currentData = "";
+    }
+  }
+
+  if (!transcript) {
+    console.error(`[Worker] Could not extract transcript from response.`);
+    console.error(`[Worker] Content-Type: ${contentType}`);
+    console.error(`[Worker] Full raw response (first 1500 chars):\n${rawText.substring(0, 1500)}`);
+    throw new Error(`Could not extract transcript. Content-Type: ${contentType}. Response preview: ${rawText.substring(0, 300)}`);
+  }
+
+  console.log(`[Worker] Extracted transcript (${transcript.length} chars): ${transcript.substring(0, 100)}...`);
+  return transcript;
 }
 
 async function generateScript(

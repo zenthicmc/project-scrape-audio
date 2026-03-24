@@ -43,8 +43,11 @@ export async function GET(
       const send = (event: string, data: unknown) => {
         if (closed) return;
         try {
-          controller.enqueue(encoder.encode(sseMessage(event, data)));
-        } catch {
+          const msg = sseMessage(event, data);
+          console.log(`[SSE Send] event="${event}" dataLength=${JSON.stringify(data).length} jobId=${jobId}`);
+          controller.enqueue(encoder.encode(msg));
+        } catch (err) {
+          console.error(`[SSE Send Error] event="${event}" jobId=${jobId}`, err);
           closed = true;
         }
       };

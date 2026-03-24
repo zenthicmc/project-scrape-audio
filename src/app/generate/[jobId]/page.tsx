@@ -30,10 +30,10 @@ interface JobMeta {
 // ─── Progress steps config ────────────────────────────────────────────────────
 
 const STEPS = [
-  { key: "fetching",    icon: Zap,       labelId: "Mengambil transkrip video...",   labelEn: "Fetching transcript..." },
-  { key: "processing",  icon: Brain,     labelId: "Memproses dengan AI...",          labelEn: "Processing with AI..." },
-  { key: "streaming",   icon: Sparkles,  labelId: "Menulis script...",               labelEn: "Writing script..." },
-  { key: "completed",   icon: CheckCircle, labelId: "Selesai!",                      labelEn: "Done!" },
+  { key: "fetching", icon: Zap, labelId: "Mengambil transkrip video...", labelEn: "Fetching transcript..." },
+  { key: "processing", icon: Brain, labelId: "Memproses dengan AI...", labelEn: "Processing with AI..." },
+  { key: "streaming", icon: Sparkles, labelId: "Menulis script...", labelEn: "Writing script..." },
+  { key: "completed", icon: CheckCircle, labelId: "Selesai!", labelEn: "Done!" },
 ];
 
 function getStepIndex(status: ProcessingStatus): number {
@@ -99,48 +99,99 @@ export default function ProcessingPage() {
     const es = new EventSource(`/api/generate/${jobId}/stream`);
     eventSourceRef.current = es;
 
+    // Helper: safely parse SSE data with logging
+    const safeParse = (eventType: string, raw: string): Record<string, unknown> | null => {
+      try {
+        return JSON.parse(raw);
+      } catch (err) {
+        console.error(
+          `[SSE Parse Error] event="${eventType}"`,
+          `\n  raw data: ${JSON.stringify(raw)}`,
+          `\n  raw length: ${raw?.length}`,
+          `\n  first 200 chars: ${raw?.substring(0, 200)}`,
+          `\n  error:`, err
+        );
+        return null;
+      }
+    };
+
+    // Catch-all: log any message that arrives on the default handler
+    // (EventSource may deliver unparsed frames here)
+    es.onmessage = (e) => {
+      console.warn(
+        `[SSE onmessage] Received unhandled message:`,
+        `\n  type: ${e.type}`,
+        `\n  data: ${JSON.stringify(e.data?.substring?.(0, 300) ?? e.data)}`,
+        `\n  lastEventId: ${e.lastEventId}`
+      );
+    };
+
     es.addEventListener("ping", () => {
-      // Connection established
+      console.log("[SSE] ping received — connection established");
     });
 
     es.addEventListener("status", (e) => {
-      const data = JSON.parse(e.data);
+      console.log("[SSE] status event, raw data:", e.data);
+      const data = safeParse("status", e.data);
+      if (!data) {
+        console.error("[SSE] Failed to parse status event. Full raw:", e.data);
+        return;
+      }
+      console.log("[SSE] status parsed:", data);
       const s = data.status as string;
       setJobMeta({
-        platform: data.platform,
-        style: data.style,
-        topic: data.topic,
-        videoUrl: data.videoUrl,
+        platform: data.platform as string,
+        style: data.style as string,
+        topic: data.topic as string,
+        videoUrl: data.videoUrl as string,
       });
       if (s === "PENDING") setStatus("fetching");
       else if (s === "PROCESSING") setStatus("processing");
     });
 
     es.addEventListener("streaming_start", () => {
+      console.log("[SSE] streaming_start");
       setStatus("streaming");
     });
 
     es.addEventListener("chunk", (e) => {
-      const data = JSON.parse(e.data);
-      setStreamedText(prev => prev + data.text);
+      const data = safeParse("chunk", e.data);
+      if (!data) return;
+      setStreamedText(prev => prev + (data.text as string));
     });
 
     es.addEventListener("completed", (e) => {
-      const data = JSON.parse(e.data);
-      setFinalScript(data.script);
-      setStreamedText(data.script); // ensure full script shown
+      console.log("[SSE] completed event, raw data length:", e.data?.length);
+      const data = safeParse("completed", e.data);
+      if (!data) {
+        setError("Failed to parse completed data");
+        setStatus("failed");
+        es.close();
+        return;
+      }
+      setFinalScript(data.script as string);
+      setStreamedText(data.script as string);
       setStatus("completed");
       es.close();
     });
 
     es.addEventListener("failed", (e) => {
-      const data = JSON.parse(e.data);
-      setError(data.error || "Processing failed");
+      console.error("[SSE] failed event, full raw data:", e.data);
+      const data = safeParse("failed", e.data);
+      if (data) {
+        console.error("[SSE] failed parsed:", data);
+        setError((data.error as string) || "Processing failed");
+      } else {
+        // Could not parse — show the raw data as the error
+        console.error("[SSE] Could not parse failed event data");
+        setError(`Processing failed. Raw response: ${e.data?.substring(0, 500) || "(empty)"}`);
+      }
       setStatus("failed");
       es.close();
     });
 
     es.addEventListener("timeout", () => {
+      console.log("[SSE] timeout event");
       setError(language === "id"
         ? "Proses terlalu lama. Silakan coba lagi."
         : "Processing timed out. Please try again.");
@@ -148,7 +199,12 @@ export default function ProcessingPage() {
       es.close();
     });
 
-    es.addEventListener("error", () => {
+    es.addEventListener("error", (e) => {
+      console.error("[SSE] error event", {
+        readyState: es.readyState,
+        readyStateLabel: ["CONNECTING", "OPEN", "CLOSED"][es.readyState],
+        event: e,
+      });
       if (es.readyState === EventSource.CLOSED) return;
       setError(language === "id"
         ? "Koneksi terputus. Silakan refresh halaman."
@@ -243,23 +299,23 @@ export default function ProcessingPage() {
             {status === "completed"
               ? <CheckCircle className="w-8 h-8 text-green-500" />
               : status === "failed" || status === "timeout"
-              ? <XCircle className="w-8 h-8 text-destructive" />
-              : <Sparkles className="w-8 h-8 text-primary animate-pulse" />
+                ? <XCircle className="w-8 h-8 text-destructive" />
+                : <Sparkles className="w-8 h-8 text-primary animate-pulse" />
             }
           </div>
           <h1 className="text-2xl font-bold mb-2">
             {status === "completed"
               ? (language === "id" ? "Script Siap! 🎉" : "Script Ready! 🎉")
               : status === "failed" || status === "timeout"
-              ? (language === "id" ? "Proses Gagal" : "Process Failed")
-              : (language === "id" ? "Generating Your Script..." : "Generating Your Script...")}
+                ? (language === "id" ? "Proses Gagal" : "Process Failed")
+                : (language === "id" ? "Generating Your Script..." : "Generating Your Script...")}
           </h1>
           <p className="text-sm text-muted-foreground">
             {status === "completed"
               ? (language === "id" ? "Script Anda sudah siap. Copy, edit, atau regenerate." : "Your script is ready. Copy, edit, or regenerate.")
               : status === "failed" || status === "timeout"
-              ? (language === "id" ? "Terjadi kesalahan saat memproses video Anda." : "An error occurred while processing your video.")
-              : (language === "id" ? "AI sedang memproses video kamu — hasilnya akan muncul di bawah" : "AI is processing your video — results will appear below")}
+                ? (language === "id" ? "Terjadi kesalahan saat memproses video Anda." : "An error occurred while processing your video.")
+                : (language === "id" ? "AI sedang memproses video kamu — hasilnya akan muncul di bawah" : "AI is processing your video — results will appear below")}
           </p>
           {platformLabel && (
             <div className="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground">
@@ -287,23 +343,21 @@ export default function ProcessingPage() {
                 const isCurrent = i === currentStepIndex;
                 return (
                   <div key={step.key} className="flex flex-col items-center gap-2 relative z-10">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${
-                      isDone
-                        ? "bg-primary border-primary text-white"
-                        : isCurrent
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${isDone
+                      ? "bg-primary border-primary text-white"
+                      : isCurrent
                         ? "bg-primary/10 border-primary text-primary"
                         : "bg-background border-border text-muted-foreground"
-                    }`}>
+                      }`}>
                       {isDone
                         ? <Check className="w-4 h-4" />
                         : isCurrent
-                        ? <Loader2 className="w-4 h-4 animate-spin" />
-                        : <Icon className="w-4 h-4" />
+                          ? <Loader2 className="w-4 h-4 animate-spin" />
+                          : <Icon className="w-4 h-4" />
                       }
                     </div>
-                    <span className={`text-xs font-medium text-center max-w-20 leading-tight hidden sm:block ${
-                      isCurrent ? "text-primary" : isDone ? "text-foreground" : "text-muted-foreground"
-                    }`}>
+                    <span className={`text-xs font-medium text-center max-w-20 leading-tight hidden sm:block ${isCurrent ? "text-primary" : isDone ? "text-foreground" : "text-muted-foreground"
+                      }`}>
                       {language === "id" ? step.labelId : step.labelEn}
                     </span>
                   </div>
