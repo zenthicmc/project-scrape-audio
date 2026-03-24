@@ -64,3 +64,8 @@
 ## Bug Fix — Transcript SSE Parsing (Round 7)
 
 - [x] BUG: Worker hanya baca 'full_text' dari event 'done' yang kosong — harus akumulasi dari setiap event 'transcript' (field 'text')
+
+## Bug Fix — SSE Parsing & Worker Error (Round 8)
+
+- [x] BUG: SSE /api/generate/[jobId]/stream — failed event mengirim raw SSE text sebagai JSON, client gagal parse
+- [x] BUG: Worker error message mengandung raw SSE text dari transcription API

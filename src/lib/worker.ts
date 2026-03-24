@@ -138,10 +138,18 @@ async function transcribeVideo(videoUrl: string): Promise<string> {
   console.log(`[Worker] accumulated length: ${accumulated.length}`);
 
   if (!transcript) {
+    // Log full details server-side for debugging, but throw a clean user-facing error
     console.error(`[Worker] Could not extract transcript from response.`);
     console.error(`[Worker] Content-Type: ${contentType}`);
+    console.error(`[Worker] Segments collected: ${transcriptSegments.length}`);
+    console.error(`[Worker] full_text length: ${fullText.length}`);
     console.error(`[Worker] Full raw response (first 1500 chars):\n${rawText.substring(0, 1500)}`);
-    throw new Error(`Could not extract transcript. Content-Type: ${contentType}. Response preview: ${rawText.substring(0, 300)}`);
+    // Clean error message — do NOT include raw SSE body (it causes JSON parse errors on client)
+    throw new Error(
+      `Gagal mengekstrak transkrip dari video. ` +
+      `Pastikan video memiliki audio yang jelas dan URL valid. ` +
+      `(segments: ${transcriptSegments.length}, content-type: ${contentType.substring(0, 50)})`
+    );
   }
 
   console.log(`[Worker] Extracted transcript (${transcript.length} chars): ${transcript.substring(0, 100)}...`);
@@ -290,8 +298,17 @@ async function processJob(job: Job<ScriptJobData>) {
     await job.updateProgress(100);
     console.log(`[Worker] Job ${jobId} completed successfully`);
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error(`[Worker] Job ${jobId} failed:`, errorMessage);
+    // Sanitize error message: strip any raw SSE/HTTP body content that may have leaked in
+    let rawErrorMessage = error instanceof Error ? error.message : "Unknown error";
+
+    // If the error message contains raw SSE text (starts with "event:" or "data:"), replace it
+    const looksLikeSSE = rawErrorMessage.includes("event:") || rawErrorMessage.includes("data:") || rawErrorMessage.includes("\\n");
+    const errorMessage = looksLikeSSE
+      ? "Terjadi kesalahan saat memproses video. Silakan coba lagi atau gunakan URL yang berbeda."
+      : rawErrorMessage;
+
+    console.error(`[Worker] Job ${jobId} failed (raw):`, rawErrorMessage);
+    console.error(`[Worker] Job ${jobId} failed (sanitized):`, errorMessage);
 
     // Update job as failed
     await prisma.scriptJob.update({
