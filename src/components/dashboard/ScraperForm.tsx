@@ -10,7 +10,7 @@ import { SCRIPT_STYLES, NICHE_OPTIONS } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ScraperFormProps {
-  platform: "INSTAGRAM" | "TIKTOK";
+  platform: "INSTAGRAM" | "TIKTOK" | "YOUTUBE";
   credits: number;
 }
 
@@ -70,14 +70,17 @@ export default function ScraperForm({ platform, credits }: ScraperFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const isInstagram = platform === "INSTAGRAM";
-  const platformLabel = isInstagram ? "Instagram" : "TikTok";
-  const exampleUrl = isInstagram
-    ? "https://www.instagram.com/reel/xxxx"
-    : "https://www.tiktok.com/@user/video/xxxx";
-  const urlPlaceholder = isInstagram
-    ? "https://www.instagram.com/reel/..."
-    : "https://www.tiktok.com/@creator/video/...";
+  const platformLabel =
+    platform === "INSTAGRAM" ? "Instagram" :
+    platform === "YOUTUBE" ? "YouTube Shorts" : "TikTok";
+  const exampleUrl =
+    platform === "INSTAGRAM" ? "https://www.instagram.com/reel/xxxx" :
+    platform === "YOUTUBE" ? "https://www.youtube.com/shorts/xxxx" :
+    "https://www.tiktok.com/@user/video/xxxx";
+  const urlPlaceholder =
+    platform === "INSTAGRAM" ? "https://www.instagram.com/reel/..." :
+    platform === "YOUTUBE" ? "https://www.youtube.com/shorts/..." :
+    "https://www.tiktok.com/@creator/video/...";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

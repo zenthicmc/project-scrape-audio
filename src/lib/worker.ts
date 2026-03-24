@@ -15,6 +15,7 @@ const anthropic = new Anthropic({
 });
 
 const STYLE_PROMPTS: Record<string, string> = {
+  // ── Video script styles (Instagram, TikTok, YouTube Shorts) ──────────────
   ORIGINAL:
     "Pertahankan gaya dan tone asli dari transkrip, hanya perbaiki grammar dan struktur kalimat.",
   MIRIP_REFERENSI:
@@ -29,7 +30,14 @@ const STYLE_PROMPTS: Record<string, string> = {
   FOKUS_FITUR:
     "Highlight fitur-fitur spesifik secara detail. Jelaskan cara kerja, spesifikasi teknis, dan keunggulan kompetitif dari setiap fitur.",
   FOMO_URGENCY:
-    "Bangun rasa takut ketinggalan (FOMO) dan urgency. Mulai dengan hook yang membuat audiens merasa mereka akan rugi kalau tidak segera bertindak. Gunakan momentum tren, social proof, dan time pressure. Contoh opening: 'Ini lagi viral banget tapi banyak yang belum tau…', 'Kalau kamu telat lihat ini, kamu rugi…'. Buat audiens merasa harus action sekarang.",
+    "Bangun rasa takut ketinggalan (FOMO) dan urgency. Mulai dengan hook yang membuat audiens merasa mereka akan rugi kalau tidak segera bertindak. Gunakan momentum tren, social proof, dan time pressure. Contoh opening: 'Ini lagi viral banget tapi banyak yang belum tau...', 'Kalau kamu telat lihat ini, kamu rugi...'. Buat audiens merasa harus action sekarang.",
+  // ── LinkedIn-specific styles ─────────────────────────────────────────────
+  PROFESSIONAL:
+    "Tulis dengan tone profesional dan formal. Gunakan bahasa yang bersih, lugas, dan menunjukkan expertise. Hindari slang. Struktur: insight pembuka yang kuat → penjelasan mendalam → takeaway praktis → CTA soft yang mengundang diskusi.",
+  THOUGHT_LEADERSHIP:
+    "Posisikan penulis sebagai pemimpin pemikiran di bidangnya. Mulai dengan perspektif unik atau kontra-intuitif yang mengejutkan. Bagikan insight mendalam, data, atau pengalaman nyata. Gunakan format LinkedIn yang mudah dibaca (baris pendek, spasi). Akhiri dengan pertanyaan yang mendorong diskusi di komentar.",
+  STORYTELLING_LINKEDIN:
+    "Gunakan format storytelling khas LinkedIn: mulai dengan momen personal atau pengalaman nyata yang relatable, bangun narasi yang emosional namun profesional, gunakan baris pendek dan spasi untuk readability, akhiri dengan lesson learned yang universal dan CTA untuk engage (like, comment, share).",
 };
 
 async function transcribeVideo(videoUrl: string): Promise<string> {
@@ -72,67 +80,43 @@ async function transcribeVideo(videoUrl: string): Promise<string> {
   }
 
   // Case 2: SSE response (text/event-stream or body starts with "event:")
-  //
-  // Confirmed API event format from att.awbs.network/transcribe:
-  //
-  //   event: progress
-  //   data: { step, total_steps, stage, message, progress_pct, request_id }
-  //
-  //   event: transcript
-  //   data: { index, total, text, start, end }   ← one per audio segment
-  //
-  //   event: done
-  //   data: { request_id, language, language_probability, total_segments,
-  //           duration, processing_time, full_text }  ← complete transcript
-  //
-  // STRATEGY:
-  //   PRIMARY   → full_text from event "done"  (already assembled by API)
-  //   FALLBACK  → join all "text" fields from event "transcript" segments
-  //               (in case full_text is missing or empty)
-
   console.log(`[Worker] Detected SSE response, parsing events...`);
 
   const lines = rawText.split("\n");
-  const transcriptSegments: string[] = [];  // fallback: accumulate per-segment text
-  let fullText = "";                         // primary: full_text from event "done"
+  const transcriptSegments: string[] = [];
+  let fullText = "";
   let currentEventType = "";
   let currentData = "";
 
   for (const line of lines) {
-    const trimmedLine = line.trimEnd(); // preserve leading spaces in data, trim trailing
+    const trimmedLine = line.trimEnd();
 
     if (trimmedLine.startsWith("event:")) {
       currentEventType = trimmedLine.slice(6).trim();
-      currentData = ""; // reset data buffer for new event
+      currentData = "";
     } else if (trimmedLine.startsWith("data:")) {
-      // Append to currentData (multi-line data support)
       const dataChunk = trimmedLine.slice(5).trimStart();
       currentData = currentData ? currentData + dataChunk : dataChunk;
     } else if (trimmedLine === "") {
-      // Empty line = end of SSE event block — process accumulated data
       if (currentData && currentEventType) {
         try {
           const parsed = JSON.parse(currentData);
 
           if (currentEventType === "done") {
-            // PRIMARY: use full_text from done event
             const ft = (parsed.full_text || "").trim();
             console.log(`[Worker] SSE event="done" full_text length: ${ft.length}, language: ${parsed.language}, segments: ${parsed.total_segments}`);
             if (ft.length > 0) fullText = ft;
 
           } else if (currentEventType === "transcript") {
-            // FALLBACK: accumulate each segment's text
             const segText = (parsed.text || "").trim();
             if (segText) {
               transcriptSegments.push(segText);
-              // Log only first and last segment to avoid log spam
               if (parsed.index === 1 || parsed.index === parsed.total) {
                 console.log(`[Worker] SSE transcript segment ${parsed.index}/${parsed.total}: "${segText.substring(0, 60)}"`);
               }
             }
 
           } else if (currentEventType === "progress" || currentEventType === "status") {
-            // Progress/status update — just log it (API may use either name)
             console.log(`[Worker] SSE ${currentEventType}: step ${parsed.step}/${parsed.total_steps} (${parsed.progress_pct}%) — ${parsed.stage}: ${parsed.message}`);
           }
         } catch (parseErr) {
@@ -141,15 +125,11 @@ async function transcribeVideo(videoUrl: string): Promise<string> {
         }
       }
 
-      // Reset for next event block
       currentEventType = "";
       currentData = "";
     }
   }
 
-  // Build final transcript:
-  //   PRIMARY:  full_text from done event (API-assembled, most reliable)
-  //   FALLBACK: join all accumulated segment texts
   const accumulated = transcriptSegments.join(" ").trim();
   const transcript = fullText || accumulated;
 
@@ -157,10 +137,9 @@ async function transcribeVideo(videoUrl: string): Promise<string> {
   console.log(`[Worker] Segments collected: ${transcriptSegments.length}`);
   console.log(`[Worker] full_text length (from done): ${fullText.length}`);
   console.log(`[Worker] accumulated length (from segments): ${accumulated.length}`);
-  console.log(`[Worker] Using: ${fullText ? 'full_text (PRIMARY)' : 'accumulated segments (FALLBACK)'}`);
+  console.log(`[Worker] Using: ${fullText ? "full_text (PRIMARY)" : "accumulated segments (FALLBACK)"}`);
 
   if (!transcript) {
-    // Log full details server-side for debugging, but throw a clean user-facing error
     console.error(`[Worker] Could not extract transcript from response.`);
     console.error(`[Worker] Content-Type: ${contentType}`);
     console.error(`[Worker] Full raw response (first 2000 chars):\n${rawText.substring(0, 2000)}`);
@@ -175,15 +154,55 @@ async function transcribeVideo(videoUrl: string): Promise<string> {
   return transcript;
 }
 
+/**
+ * Generate script using Claude AI.
+ * Supports both video platforms (Instagram, TikTok, YouTube) and LinkedIn text rewriting.
+ */
 async function generateScript(
   transcript: string,
   style: string,
+  platform: string,
   topic?: string,
-  niche?: string
+  niche?: string,
+  targetAudience?: string
 ): Promise<string> {
   const stylePrompt = STYLE_PROMPTS[style] || STYLE_PROMPTS.ORIGINAL;
+  const isLinkedIn = platform === "LINKEDIN";
+  const isYouTube = platform === "YOUTUBE";
 
-  const systemPrompt = `Kamu adalah seorang ahli copywriter dan content creator profesional yang sangat berpengalaman dalam membuat script video viral untuk Instagram dan TikTok.
+  let systemPrompt: string;
+  let userContent: string;
+
+  if (isLinkedIn) {
+    // LinkedIn-specific prompt: focus on professional rewriting, not video scripting
+    systemPrompt = `Kamu adalah seorang ahli content strategist dan copywriter profesional yang sangat berpengalaman dalam membuat konten LinkedIn yang viral dan engaging.
+
+Tugasmu adalah merewrite dan meningkatkan kualitas konten LinkedIn yang diberikan menjadi versi yang lebih polished, engaging, dan profesional.
+
+INSTRUKSI GAYA: ${stylePrompt}
+
+${targetAudience ? `TARGET AUDIENS: ${targetAudience}` : ""}
+${topic ? `TOPIK/KONTEKS: ${topic}` : ""}
+
+ATURAN PENTING UNTUK LINKEDIN:
+1. Gunakan format LinkedIn yang optimal: baris pendek (max 2-3 kalimat per paragraf), beri spasi antar paragraf
+2. Mulai dengan hook yang kuat di baris pertama — ini yang menentukan apakah orang klik "see more"
+3. Improve clarity: sederhanakan kalimat yang terlalu panjang atau kompleks
+4. Improve engagement: tambahkan pertanyaan retoris, data/angka jika relevan, atau insight yang mengejutkan
+5. Pertahankan tone yang sesuai dengan gaya yang dipilih
+6. Akhiri dengan CTA yang soft: pertanyaan untuk diskusi, ajakan untuk share, atau reflection
+7. Panjang optimal: 150-300 kata (LinkedIn sweet spot)
+8. JANGAN gunakan label struktural seperti "HOOK:", "BODY:", "CTA:"
+9. SELALU gunakan format Markdown: **bold** untuk penekanan, paragraf terpisah untuk setiap bagian
+10. Gunakan emoji secara strategis tapi tidak berlebihan (LinkedIn lebih formal dari TikTok)`;
+
+    userContent = `Berikut adalah konten LinkedIn yang perlu direwrite dan ditingkatkan kualitasnya:\n\n---\n${transcript}\n---\n\nBuat versi yang lebih baik berdasarkan instruksi di atas.`;
+
+  } else {
+    // Video script prompt (Instagram, TikTok, YouTube Shorts)
+    const platformName = isYouTube ? "YouTube Shorts" : platform === "INSTAGRAM" ? "Instagram Reels" : "TikTok";
+
+    systemPrompt = `Kamu adalah seorang ahli copywriter dan content creator profesional yang sangat berpengalaman dalam membuat script video viral untuk ${platformName}.
 
 Tugasmu adalah memparafrase transkrip video menjadi script yang lebih polished, engaging, dan siap digunakan.
 
@@ -200,9 +219,12 @@ ATURAN PENTING:
 5. Gunakan emoji secara strategis untuk meningkatkan engagement
 6. Panjang script: 150-400 kata
 7. JANGAN gunakan label bagian seperti "HOOK:", "BODY:", "CTA:", atau label struktural lainnya
-8. JANGAN gunakan garis pemisah atau karakter transisi seperti ---, --, ===, —, atau karakter pemisah lainnya di dalam kalimat maupun antar paragraf
+8. JANGAN gunakan garis pemisah atau karakter transisi seperti ---, --, ===, atau karakter pemisah lainnya
 9. SELALU gunakan format Markdown untuk output: gunakan ## untuk heading, **bold** untuk penekanan, - untuk bullet list, dan paragraf terpisah untuk setiap bagian
 10. Script harus mengalir natural tanpa penanda struktural yang terlihat oleh pembaca`;
+
+    userContent = `Berikut adalah transkrip video yang perlu diparafrase:\n\n---\n${transcript}\n---\n\nBuat script berdasarkan instruksi di atas.`;
+  }
 
   const message = await anthropic.messages.create({
     model: "claude-haiku-4-5",
@@ -210,7 +232,7 @@ ATURAN PENTING:
     messages: [
       {
         role: "user",
-        content: `Berikut adalah transkrip video yang perlu diparafrase:\n\n---\n${transcript}\n---\n\nBuat script berdasarkan instruksi di atas.`,
+        content: userContent,
       },
     ],
     system: systemPrompt,
@@ -222,28 +244,25 @@ ATURAN PENTING:
 }
 
 /**
- * BUG FIX #3: Safe credit refund — only refund once per job.
+ * Safe credit refund — only refund once per job.
  * Uses creditRefunded boolean field to prevent duplicate refunds (credit exploit).
  */
 async function safeRefundCredits(jobId: string, userId: string, creditsUsed: number) {
-  // Atomically check and set creditRefunded to prevent race conditions
   const updated = await prisma.scriptJob.updateMany({
     where: {
       id: jobId,
-      creditRefunded: false, // Only update if not yet refunded
+      creditRefunded: false,
     },
     data: {
       creditRefunded: true,
     },
   });
 
-  // If count === 0, refund was already done — skip
   if (updated.count === 0) {
     console.log(`[Worker] Skipping duplicate refund for job ${jobId}`);
     return;
   }
 
-  // Perform the actual credit refund
   await prisma.$transaction([
     prisma.creditBalance.update({
       where: { userId },
@@ -263,10 +282,20 @@ async function safeRefundCredits(jobId: string, userId: string, creditsUsed: num
   console.log(`[Worker] Refunded ${creditsUsed} credits for job ${jobId}`);
 }
 
-async function processJob(job: Job<ScriptJobData>) {
-  const { jobId, userId, videoUrl, platform, topic, niche, style } = job.data;
+function getPlatformLabel(platform: string): string {
+  switch (platform) {
+    case "INSTAGRAM": return "Instagram";
+    case "TIKTOK": return "TikTok";
+    case "YOUTUBE": return "YouTube Shorts";
+    case "LINKEDIN": return "LinkedIn";
+    default: return platform;
+  }
+}
 
-  console.log(`[Worker] Processing job ${jobId} for user ${userId}`);
+async function processJob(job: Job<ScriptJobData>) {
+  const { jobId, userId, videoUrl, platform, topic, niche, style, targetAudience, linkedinText } = job.data;
+
+  console.log(`[Worker] Processing job ${jobId} for user ${userId}, platform: ${platform}`);
 
   // Update status to PROCESSING
   await prisma.scriptJob.update({
@@ -275,24 +304,37 @@ async function processJob(job: Job<ScriptJobData>) {
   });
 
   try {
-    // Step 1: Transcribe
-    await job.updateProgress(20);
-    console.log(`[Worker] Transcribing video: ${videoUrl}`);
-    const transcript = await transcribeVideo(videoUrl);
+    let transcript: string;
 
-    if (!transcript || transcript.trim().length < 10) {
-      throw new Error("Transkrip kosong atau terlalu pendek. Pastikan video memiliki audio yang jelas.");
+    if (platform === "LINKEDIN" && linkedinText && linkedinText.trim().length > 10) {
+      // LinkedIn with pasted text — skip transcription, use text directly
+      console.log(`[Worker] LinkedIn job: using pasted text (${linkedinText.length} chars)`);
+      transcript = linkedinText.trim();
+
+      await prisma.scriptJob.update({
+        where: { id: jobId },
+        data: { transcript },
+      });
+    } else {
+      // Video platforms (Instagram, TikTok, YouTube) or LinkedIn with URL
+      await job.updateProgress(20);
+      console.log(`[Worker] Transcribing video: ${videoUrl}`);
+      transcript = await transcribeVideo(videoUrl);
+
+      if (!transcript || transcript.trim().length < 10) {
+        throw new Error("Transkrip kosong atau terlalu pendek. Pastikan video memiliki audio yang jelas.");
+      }
+
+      await prisma.scriptJob.update({
+        where: { id: jobId },
+        data: { transcript },
+      });
     }
 
-    await prisma.scriptJob.update({
-      where: { id: jobId },
-      data: { transcript },
-    });
-
-    // Step 2: Generate script with Claude
+    // Step 2: Generate script/rewrite with Claude
     await job.updateProgress(60);
-    console.log(`[Worker] Generating script with Claude...`);
-    const generatedScript = await generateScript(transcript, style, topic, niche);
+    console.log(`[Worker] Generating script with Claude (platform: ${platform}, style: ${style})...`);
+    const generatedScript = await generateScript(transcript, style, platform, topic, niche, targetAudience);
 
     // Step 3: Update job as completed
     await job.updateProgress(90);
@@ -306,11 +348,19 @@ async function processJob(job: Job<ScriptJobData>) {
     });
 
     // Create notification
+    const platformLabel = getPlatformLabel(platform);
+    const notifTitle = platform === "LINKEDIN"
+      ? "Konten LinkedIn Siap! 🎉"
+      : "Script Selesai Dibuat! 🎉";
+    const notifMessage = platform === "LINKEDIN"
+      ? `Konten LinkedIn Anda sudah direwrite dan siap digunakan. Klik untuk melihat hasilnya.`
+      : `Script untuk video ${platformLabel} Anda sudah siap. Klik untuk melihat hasilnya.`;
+
     await prisma.notification.create({
       data: {
         userId,
-        title: "Script Selesai Dibuat! 🎉",
-        message: `Script untuk video ${platform === "INSTAGRAM" ? "Instagram" : "TikTok"} Anda sudah siap. Klik untuk melihat hasilnya.`,
+        title: notifTitle,
+        message: notifMessage,
         type: "JOB_COMPLETED",
         referenceId: jobId,
         jobId,
@@ -323,7 +373,6 @@ async function processJob(job: Job<ScriptJobData>) {
     // Sanitize error message: strip any raw SSE/HTTP body content that may have leaked in
     let rawErrorMessage = error instanceof Error ? error.message : "Unknown error";
 
-    // If the error message contains raw SSE text (starts with "event:" or "data:"), replace it
     const looksLikeSSE = rawErrorMessage.includes("event:") || rawErrorMessage.includes("data:") || rawErrorMessage.includes("\\n");
     const errorMessage = looksLikeSSE
       ? "Terjadi kesalahan saat memproses video. Silakan coba lagi atau gunakan URL yang berbeda."
@@ -370,7 +419,7 @@ async function processJob(job: Job<ScriptJobData>) {
       data: {
         userId,
         title: "Proses Gagal — Kredit Dikembalikan",
-        message: `Maaf, proses script gagal: ${errorMessage}. ${failedJob?.creditsUsed ?? 10} kredit telah dikembalikan ke akun Anda.`,
+        message: `Maaf, proses gagal: ${errorMessage}. ${failedJob?.creditsUsed ?? 10} kredit telah dikembalikan ke akun Anda.`,
         type: "JOB_FAILED",
         referenceId: jobId,
         jobId,
@@ -378,8 +427,6 @@ async function processJob(job: Job<ScriptJobData>) {
     });
 
     // Do NOT re-throw — prevents BullMQ from retrying error.
-    // Re-throwing causes BullMQ to mark the job as failed and potentially retry.
-    // Since attempts=1, we handle failure gracefully here without re-throwing.
     console.log(`[Worker] Job ${jobId} handled gracefully — no retry will occur`);
   }
 }

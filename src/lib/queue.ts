@@ -26,9 +26,11 @@ export interface ScriptJobData {
   jobId: string;
   userId: string;
   videoUrl: string;
-  platform: "INSTAGRAM" | "TIKTOK";
+  platform: "INSTAGRAM" | "TIKTOK" | "YOUTUBE" | "LINKEDIN";
   topic?: string;
   niche?: string;
+  targetAudience?: string;   // LinkedIn: target audience
+  linkedinText?: string;     // LinkedIn: pasted text (alternative to URL)
   style: string;
 }
 

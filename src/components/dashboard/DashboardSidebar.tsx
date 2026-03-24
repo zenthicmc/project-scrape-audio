@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Instagram, Music2, Sparkles, Menu, X, LayoutDashboard } from "lucide-react";
+import { Instagram, Music2, Youtube, Linkedin, Sparkles, Menu, X, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -12,10 +12,11 @@ export default function DashboardSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { t } = useLanguage();
 
-  const NAV_ITEMS = [
-    { href: "/dashboard", icon: LayoutDashboard, label: t("nav.dashboard") },
-    { href: "/dashboard/instagram", icon: Instagram, label: t("nav.instagram") },
-    { href: "/dashboard/tiktok", icon: Music2, label: t("nav.tiktok") },
+  const PLATFORM_ITEMS = [
+    { href: "/dashboard/instagram", icon: Instagram, label: "📸 Instagram", emoji: "📸" },
+    { href: "/dashboard/tiktok", icon: Music2, label: "🎵 TikTok", emoji: "🎵" },
+    { href: "/dashboard/youtube", icon: Youtube, label: "🎬 YouTube Shorts", emoji: "🎬" },
+    { href: "/dashboard/linkedin", icon: Linkedin, label: "💼 LinkedIn", emoji: "💼" },
   ];
 
   const SidebarContent = () => (
@@ -32,10 +33,27 @@ export default function DashboardSidebar() {
 
       {/* Nav items */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {NAV_ITEMS.map((item) => {
-          const isActive = item.href === "/dashboard"
-            ? pathname === "/dashboard"
-            : pathname === item.href || pathname.startsWith(item.href + "/");
+        {/* Dashboard overview */}
+        <Link
+          href="/dashboard"
+          onClick={() => setMobileOpen(false)}
+          className={cn(
+            "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+            pathname === "/dashboard"
+              ? "bg-primary text-white shadow-sm"
+              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+          )}
+        >
+          <LayoutDashboard className="w-4 h-4 shrink-0" />
+          <span>{t("nav.dashboard")}</span>
+        </Link>
+
+        {/* Platform section */}
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 pt-4 pb-1">
+          Platforms
+        </p>
+        {PLATFORM_ITEMS.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}
@@ -48,8 +66,8 @@ export default function DashboardSidebar() {
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               )}
             >
-              <item.icon className="w-4 h-4 shrink-0" />
-              {item.label}
+              <span className="text-base leading-none w-4 text-center shrink-0">{item.emoji}</span>
+              <span>{item.label.replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]\s*/u, "")}</span>
             </Link>
           );
         })}
