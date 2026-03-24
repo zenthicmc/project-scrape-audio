@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   Sparkles, Zap, Play, CheckCircle, ArrowRight, Star, TrendingUp,
-  ChevronDown, ChevronUp, Globe, Cpu, Edit3, FileText, Shield, Clock
+  ChevronDown, ChevronUp, Globe, Cpu, Edit3, FileText, Shield, Clock,
+  LayoutDashboard
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -43,6 +45,8 @@ const DUMMY_SCRIPTS_EN: Record<string, string> = {
 
 export default function LandingPage() {
   const { t, tArray, language } = useLanguage();
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
   const [demoUrl, setDemoUrl] = useState("");
   const [demoStyle, setDemoStyle] = useState("STORY_TELLING");
   const [demoResult, setDemoResult] = useState<string | null>(null);
@@ -156,16 +160,28 @@ export default function LandingPage() {
           <div className="flex items-center gap-2">
             <LanguageToggle size="sm" />
             <ThemeToggle size="sm" />
-            <Link href="/auth/login">
-              <button className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {t("nav.login")}
-              </button>
-            </Link>
-            <Link href="/auth/register">
-              <button className="px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors glow">
-                {language === "id" ? "Coba Gratis" : "Try Free"}
-              </button>
-            </Link>
+            {isLoggedIn ? (
+              /* BUG FIX #4: Show Go to Dashboard when user is logged in */
+              <Link href="/dashboard">
+                <button className="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                  <LayoutDashboard className="w-4 h-4" />
+                  {language === "id" ? "Buka Dashboard" : "Go to Dashboard"}
+                </button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/auth/login">
+                  <button className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {t("nav.login")}
+                  </button>
+                </Link>
+                <Link href="/auth/register">
+                  <button className="px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors glow">
+                    {language === "id" ? "Coba Gratis" : "Try Free"}
+                  </button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -188,11 +204,20 @@ export default function LandingPage() {
             {t("landing.hero.description")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link href="/auth/register">
-              <button className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary text-white rounded-xl font-semibold text-base hover:bg-primary/90 transition-all glow">
-                <Zap className="w-5 h-5" /> {t("landing.hero.cta")}
-              </button>
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard">
+                <button className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary text-white rounded-xl font-semibold text-base hover:bg-primary/90 transition-all glow">
+                  <LayoutDashboard className="w-5 h-5" />
+                  {language === "id" ? "🚀 Buka Dashboard" : "🚀 Go to Dashboard"}
+                </button>
+              </Link>
+            ) : (
+              <Link href="/auth/register">
+                <button className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary text-white rounded-xl font-semibold text-base hover:bg-primary/90 transition-all glow">
+                  <Zap className="w-5 h-5" /> {t("landing.hero.cta")}
+                </button>
+              </Link>
+            )}
             <a href="#demo">
               <button className="inline-flex items-center gap-2 px-8 py-3.5 border border-border rounded-xl font-semibold text-base hover:bg-secondary transition-colors">
                 <Play className="w-5 h-5" /> {t("landing.hero.ctaSecondary")}
@@ -206,15 +231,15 @@ export default function LandingPage() {
                   <div key={i} className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 border-2 border-background flex items-center justify-center text-xs font-bold text-white">{l}</div>
                 ))}
               </div>
-              <span>2,400+ {language === "id" ? "content creator aktif" : "active content creators"}</span>
+              <span>👥 2,400+ {language === "id" ? "content creator aktif" : "active content creators"}</span>
             </div>
             <div className="flex items-center gap-1">
               {[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
-              <span className="ml-1">4.9/5 rating</span>
+              <span className="ml-1">⭐ 4.9/5 rating</span>
             </div>
             <div className="flex items-center gap-1">
               <TrendingUp className="w-4 h-4 text-green-400" />
-              <span>50,000+ {language === "id" ? "script dibuat" : "scripts created"}</span>
+              <span>📝 50,000+ {language === "id" ? "script dibuat" : "scripts created"}</span>
             </div>
           </div>
         </div>
@@ -322,10 +347,10 @@ export default function LandingPage() {
               {language === "id" ? "Cara Kerja" : "How It Works"}
             </span>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              {language === "id" ? "4 Langkah Mudah" : "4 Simple Steps"}
+              {language === "id" ? "⚡ 4 Langkah Mudah" : "⚡ 4 Simple Steps"}
             </h2>
             <p className="text-muted-foreground">
-              {language === "id" ? "Dari video viral ke script siap pakai" : "From viral video to ready-to-use script"}
+              {language === "id" ? "🎯 Dari video viral ke script siap pakai" : "🎯 From viral video to ready-to-use script"}
             </p>
           </div>
           <div className="grid md:grid-cols-4 gap-6 max-w-5xl mx-auto">
@@ -468,9 +493,11 @@ export default function LandingPage() {
                       </li>
                     ))}
                   </ul>
-                  <Link href="/auth/register">
+                  <Link href={isLoggedIn ? "/dashboard/billing" : "/auth/register"}>
                     <button className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-all ${plan.popular ? "bg-primary text-white hover:bg-primary/90 glow" : "border border-border hover:bg-secondary"}`}>
-                      {t("landing.pricing.buyBtn")} {plan.name}
+                      {isLoggedIn
+                        ? (language === "id" ? "💳 Beli Sekarang" : "💳 Buy Now")
+                        : `${t("landing.pricing.buyBtn")} ${plan.name}`}
                     </button>
                   </Link>
                 </div>
@@ -517,17 +544,25 @@ export default function LandingPage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/15 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
           <h2 className="text-4xl md:text-6xl font-black mb-6">
-            {language === "id" ? "Mulai Buat Script Viral " : "Start Creating Viral Scripts "}
+            {language === "id" ? "🚀 Mulai Buat Script Viral " : "🚀 Start Creating Viral Scripts "}
             <span className="gradient-text">{language === "id" ? "Sekarang" : "Now"}</span>
           </h2>
           <p className="text-xl text-muted-foreground mb-10 max-w-xl mx-auto">
             {t("landing.cta.description")}
           </p>
-          <Link href="/auth/register">
-            <button className="inline-flex items-center gap-2 px-10 py-4 bg-primary text-white rounded-xl font-bold text-lg hover:bg-primary/90 transition-all glow">
-              <Zap className="w-5 h-5" /> {t("landing.cta.btn")}
-            </button>
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/dashboard">
+              <button className="inline-flex items-center gap-2 px-10 py-4 bg-primary text-white rounded-xl font-bold text-lg hover:bg-primary/90 transition-all glow">
+                <LayoutDashboard className="w-5 h-5" /> {language === "id" ? "Buka Dashboard" : "Go to Dashboard"}
+              </button>
+            </Link>
+          ) : (
+            <Link href="/auth/register">
+              <button className="inline-flex items-center gap-2 px-10 py-4 bg-primary text-white rounded-xl font-bold text-lg hover:bg-primary/90 transition-all glow">
+                <Zap className="w-5 h-5" /> {t("landing.cta.btn")}
+              </button>
+            </Link>
+          )}
           <p className="text-sm text-muted-foreground mt-4">{t("landing.cta.note")}</p>
         </div>
       </section>

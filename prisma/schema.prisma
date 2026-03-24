@@ -117,6 +117,7 @@ model ScriptJob {
   generatedScript String?     @db.Text
   errorMessage    String?     @db.Text
   creditsUsed     Int         @default(10)
+  creditRefunded  Boolean     @default(false)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   completedAt     DateTime?

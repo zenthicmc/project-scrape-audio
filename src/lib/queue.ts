@@ -14,8 +14,9 @@ export const QUEUE_NAME = "script-generation";
 export const scriptQueue = new Queue(QUEUE_NAME, {
   connection: redisConnection,
   defaultJobOptions: {
-    attempts: 3,
-    backoff: { type: "exponential", delay: 5000 },
+    // BUG FIX #1: Set attempts to 1 — no infinite retry
+    // If job fails, it stops immediately. Credit refund is handled in worker.
+    attempts: 1,
     removeOnComplete: 100,
     removeOnFail: 200,
   },
@@ -34,5 +35,7 @@ export interface ScriptJobData {
 export async function addScriptJob(data: ScriptJobData) {
   return scriptQueue.add("generate-script", data, {
     jobId: `script-${data.jobId}`,
+    // Explicitly override to 1 attempt at the job level as well
+    attempts: 1,
   });
 }

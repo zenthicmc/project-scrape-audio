@@ -88,6 +88,48 @@ ATURAN PENTING:
   return content.text;
 }
 
+/**
+ * BUG FIX #3: Safe credit refund — only refund once per job.
+ * Uses creditRefunded boolean field to prevent duplicate refunds (credit exploit).
+ */
+async function safeRefundCredits(jobId: string, userId: string, creditsUsed: number) {
+  // Atomically check and set creditRefunded to prevent race conditions
+  const updated = await prisma.scriptJob.updateMany({
+    where: {
+      id: jobId,
+      creditRefunded: false, // Only update if not yet refunded
+    },
+    data: {
+      creditRefunded: true,
+    },
+  });
+
+  // If count === 0, refund was already done — skip
+  if (updated.count === 0) {
+    console.log(`[Worker] Skipping duplicate refund for job ${jobId}`);
+    return;
+  }
+
+  // Perform the actual credit refund
+  await prisma.$transaction([
+    prisma.creditBalance.update({
+      where: { userId },
+      data: { balance: { increment: creditsUsed } },
+    }),
+    prisma.creditTransaction.create({
+      data: {
+        userId,
+        amount: creditsUsed,
+        type: "REFUND",
+        description: "Refund karena proses gagal",
+        referenceId: jobId,
+      },
+    }),
+  ]);
+
+  console.log(`[Worker] Refunded ${creditsUsed} credits for job ${jobId}`);
+}
+
 async function processJob(job: Job<ScriptJobData>) {
   const { jobId, userId, videoUrl, platform, topic, niche, style } = job.data;
 
@@ -157,36 +199,26 @@ async function processJob(job: Job<ScriptJobData>) {
       },
     });
 
-    // Refund credits
-    await prisma.$transaction([
-      prisma.creditBalance.update({
-        where: { userId },
-        data: { balance: { increment: 10 } },
-      }),
-      prisma.creditTransaction.create({
-        data: {
-          userId,
-          amount: 10,
-          type: "REFUND",
-          description: "Refund karena proses gagal",
-          referenceId: jobId,
-        },
-      }),
-    ]);
+    // BUG FIX #3: Safe refund — only once per job, prevents credit exploit
+    const job = await prisma.scriptJob.findUnique({ where: { id: jobId } });
+    await safeRefundCredits(jobId, userId, job?.creditsUsed ?? 10);
 
     // Create failure notification
     await prisma.notification.create({
       data: {
         userId,
         title: "Proses Gagal — Kredit Dikembalikan",
-        message: `Maaf, proses script gagal: ${errorMessage}. 10 kredit telah dikembalikan ke akun Anda.`,
+        message: `Maaf, proses script gagal: ${errorMessage}. Kredit telah dikembalikan ke akun Anda.`,
         type: "JOB_FAILED",
         referenceId: jobId,
         jobId,
       },
     });
 
-    throw error; // Re-throw so BullMQ can handle retries
+    // BUG FIX #1: Do NOT re-throw the error.
+    // Re-throwing causes BullMQ to mark the job as failed and potentially retry.
+    // Since attempts=1, we handle failure gracefully here without re-throwing.
+    console.log(`[Worker] Job ${jobId} handled gracefully — no retry will occur`);
   }
 }
 

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { formatDate, SCRIPT_STYLES } from "@/lib/utils";
 import {
   Clock, CheckCircle, XCircle, Loader2, Instagram, Video, RefreshCw,
-  ChevronLeft, ChevronRight, Eye
+  ChevronLeft, ChevronRight, Eye, RotateCcw
 } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -26,12 +26,14 @@ interface ScriptJob {
 
 function HistoryContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const highlightJobId = searchParams.get("jobId");
   const { t, language } = useLanguage();
   const [jobs, setJobs] = useState<ScriptJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [retryingJobId, setRetryingJobId] = useState<string | null>(null);
   const LIMIT = 10;
 
   const STATUS_CONFIG = {
@@ -64,6 +66,28 @@ function HistoryContent() {
     return () => clearInterval(interval);
   }, [jobs, fetchJobs]);
 
+  // BUG FIX #2: Manual retry handler
+  const handleRetry = async (jobId: string) => {
+    setRetryingJobId(jobId);
+    try {
+      const res = await fetch(`/api/jobs/${jobId}/retry`, { method: "POST" });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || (language === "id" ? "Gagal melakukan retry." : "Retry failed."));
+        return;
+      }
+
+      // Redirect to history with the new job highlighted
+      router.push(`/dashboard/history?jobId=${data.jobId}`);
+      fetchJobs();
+    } catch {
+      alert(language === "id" ? "Terjadi kesalahan. Coba lagi." : "An error occurred. Please try again.");
+    } finally {
+      setRetryingJobId(null);
+    }
+  };
+
   const getStyleLabel = (value: string) =>
     SCRIPT_STYLES.find(s => s.value === value)?.label || value;
 
@@ -76,7 +100,7 @@ function HistoryContent() {
           <h1 className="text-xl font-bold">{t("dashboard.history.title")}</h1>
           <p className="text-sm text-muted-foreground">{t("dashboard.history.subtitle")}</p>
         </div>
-        <button onClick={fetchJobs} className="flex items-center gap-1.5 px-3 py-2 text-sm border border-border rounded-lg hover:bg-secondary transition-colors">
+        <button onClick={fetchJobs} className="flex items-center gap-1.5 px-3 py-2 text-sm border border-border rounded-lg hover:bg-secondary transition-colors text-foreground">
           <RefreshCw className="w-4 h-4" /> {language === "id" ? "Refresh" : "Refresh"}
         </button>
       </div>
@@ -96,7 +120,7 @@ function HistoryContent() {
             <Link href="/dashboard/instagram" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
               Instagram Scraper
             </Link>
-            <Link href="/dashboard/tiktok" className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-secondary transition-colors">
+            <Link href="/dashboard/tiktok" className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-secondary transition-colors text-foreground">
               TikTok Scraper
             </Link>
           </div>
@@ -107,6 +131,7 @@ function HistoryContent() {
             {jobs.map(job => {
               const statusCfg = STATUS_CONFIG[job.status];
               const isHighlighted = job.id === highlightJobId;
+              const isRetrying = retryingJobId === job.id;
               return (
                 <div
                   key={job.id}
@@ -125,9 +150,10 @@ function HistoryContent() {
                           <span className="text-xs text-muted-foreground">{getStyleLabel(job.style)}</span>
                           {job.niche && <span className="text-xs text-muted-foreground">· {job.niche}</span>}
                           <span className="text-xs text-muted-foreground">· {formatDate(job.createdAt)}</span>
+                          <span className="text-xs text-muted-foreground">· {job.creditsUsed} credits</span>
                         </div>
                         {job.status === "FAILED" && job.errorMessage && (
-                          <p className="text-xs text-destructive mt-1 line-clamp-1">{job.errorMessage}</p>
+                          <p className="text-xs text-destructive mt-1 line-clamp-2">{job.errorMessage}</p>
                         )}
                       </div>
                     </div>
@@ -137,9 +163,30 @@ function HistoryContent() {
                         {statusCfg.label}
                       </span>
                       {job.status === "COMPLETED" && (
-                        <Link href={`/dashboard/history/${job.id}`} className="flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary rounded-lg text-xs font-medium hover:bg-primary/20 transition-colors">
+                        <Link
+                          href={`/dashboard/history/${job.id}`}
+                          className="flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary rounded-lg text-xs font-medium hover:bg-primary/20 transition-colors"
+                        >
                           <Eye className="w-3 h-3" /> {t("dashboard.history.viewBtn")}
                         </Link>
+                      )}
+                      {/* BUG FIX #2: Retry button for failed jobs */}
+                      {job.status === "FAILED" && (
+                        <button
+                          onClick={() => handleRetry(job.id)}
+                          disabled={isRetrying}
+                          className="flex items-center gap-1 px-2.5 py-1 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-lg text-xs font-medium hover:bg-orange-500/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                          title={language === "id" ? "Coba lagi (akan mengurangi 10 kredit)" : "Retry (will deduct 10 credits)"}
+                        >
+                          {isRetrying ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <RotateCcw className="w-3 h-3" />
+                          )}
+                          {isRetrying
+                            ? (language === "id" ? "Retrying..." : "Retrying...")
+                            : (language === "id" ? "Retry" : "Retry")}
+                        </button>
                       )}
                     </div>
                   </div>
@@ -159,7 +206,7 @@ function HistoryContent() {
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="p-2 border border-border rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
+                  className="p-2 border border-border rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 text-foreground"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -167,7 +214,7 @@ function HistoryContent() {
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="p-2 border border-border rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
+                  className="p-2 border border-border rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 text-foreground"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
