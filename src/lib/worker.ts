@@ -71,56 +71,74 @@ async function transcribeVideo(videoUrl: string): Promise<string> {
 
   // Case 2: SSE response (text/event-stream or body starts with "event:")
   //
-  // API emits two event types:
-  //   event: transcript  → data: { index, total, text, start, end }  (one per segment)
-  //   event: done        → data: { request_id, language, language_probability,
-  //                                total_segments, duration, processing_time, full_text }
+  // Confirmed API event format from att.awbs.network/transcribe:
   //
-  // FIX: We must ACCUMULATE all `text` fields from every `transcript` event.
-  // The old code overwrote `transcript` on every event, keeping only the last segment.
-  // Priority: full_text from `done` event (if non-trivial) > accumulated segments.
+  //   event: progress
+  //   data: { step, total_steps, stage, message, progress_pct, request_id }
+  //
+  //   event: transcript
+  //   data: { index, total, text, start, end }   ← one per audio segment
+  //
+  //   event: done
+  //   data: { request_id, language, language_probability, total_segments,
+  //           duration, processing_time, full_text }  ← complete transcript
+  //
+  // STRATEGY:
+  //   PRIMARY   → full_text from event "done"  (already assembled by API)
+  //   FALLBACK  → join all "text" fields from event "transcript" segments
+  //               (in case full_text is missing or empty)
 
   console.log(`[Worker] Detected SSE response, parsing events...`);
 
   const lines = rawText.split("\n");
-  const transcriptSegments: string[] = [];  // accumulate each segment
-  let fullText = "";                         // from event: done → full_text
+  const transcriptSegments: string[] = [];  // fallback: accumulate per-segment text
+  let fullText = "";                         // primary: full_text from event "done"
   let currentEventType = "";
   let currentData = "";
 
   for (const line of lines) {
-    if (line.startsWith("event:")) {
-      currentEventType = line.slice(6).trim();
-    } else if (line.startsWith("data:")) {
-      currentData = line.slice(5).trim();
+    const trimmedLine = line.trimEnd(); // preserve leading spaces in data, trim trailing
 
-      try {
-        const parsed = JSON.parse(currentData);
-        console.log(`[Worker] SSE event="${currentEventType}" data keys: [${Object.keys(parsed).join(", ")}]`);
+    if (trimmedLine.startsWith("event:")) {
+      currentEventType = trimmedLine.slice(6).trim();
+      currentData = ""; // reset data buffer for new event
+    } else if (trimmedLine.startsWith("data:")) {
+      // Append to currentData (multi-line data support)
+      const dataChunk = trimmedLine.slice(5).trimStart();
+      currentData = currentData ? currentData + dataChunk : dataChunk;
+    } else if (trimmedLine === "") {
+      // Empty line = end of SSE event block — process accumulated data
+      if (currentData && currentEventType) {
+        try {
+          const parsed = JSON.parse(currentData);
 
-        if (currentEventType === "transcript") {
-          // ACCUMULATE — do NOT overwrite
-          const segText = (parsed.text || "").trim();
-          if (segText) transcriptSegments.push(segText);
+          if (currentEventType === "done") {
+            // PRIMARY: use full_text from done event
+            const ft = (parsed.full_text || "").trim();
+            console.log(`[Worker] SSE event="done" full_text length: ${ft.length}, language: ${parsed.language}, segments: ${parsed.total_segments}`);
+            if (ft.length > 0) fullText = ft;
 
-        } else if (currentEventType === "done") {
-          // Capture full_text only if it's non-trivial (> 20 chars)
-          const ft = (parsed.full_text || "").trim();
-          if (ft.length > 20) fullText = ft;
+          } else if (currentEventType === "transcript") {
+            // FALLBACK: accumulate each segment's text
+            const segText = (parsed.text || "").trim();
+            if (segText) {
+              transcriptSegments.push(segText);
+              // Log only first and last segment to avoid log spam
+              if (parsed.index === 1 || parsed.index === parsed.total) {
+                console.log(`[Worker] SSE transcript segment ${parsed.index}/${parsed.total}: "${segText.substring(0, 60)}"`);
+              }
+            }
 
-        } else {
-          // Other event types — try common field names as fallback
-          const fallback = parsed.transcript || parsed.text || parsed.result || parsed.data || "";
-          if (fallback && fallback.length > fullText.length) fullText = fallback;
-        }
-      } catch {
-        // Plain-text data line
-        console.log(`[Worker] SSE event="${currentEventType}" plain data: ${currentData.substring(0, 100)}`);
-        if ((currentEventType === "result" || currentEventType === "complete") && currentData.length > 20) {
-          fullText = currentData;
+          } else if (currentEventType === "progress") {
+            // Progress update — just log it
+            console.log(`[Worker] SSE progress: step ${parsed.step}/${parsed.total_steps} (${parsed.progress_pct}%) — ${parsed.stage}: ${parsed.message}`);
+          }
+        } catch (parseErr) {
+          console.warn(`[Worker] SSE event="${currentEventType}" failed to parse JSON data:`, parseErr);
+          console.warn(`[Worker] Raw data was: ${currentData.substring(0, 200)}`);
         }
       }
-    } else if (line.trim() === "") {
+
       // Reset for next event block
       currentEventType = "";
       currentData = "";
@@ -128,31 +146,30 @@ async function transcribeVideo(videoUrl: string): Promise<string> {
   }
 
   // Build final transcript:
-  //   1. Use full_text from done event if it's substantial
-  //   2. Otherwise join all accumulated segments
+  //   PRIMARY:  full_text from done event (API-assembled, most reliable)
+  //   FALLBACK: join all accumulated segment texts
   const accumulated = transcriptSegments.join(" ").trim();
   const transcript = fullText || accumulated;
 
+  console.log(`[Worker] === Transcript extraction summary ===`);
   console.log(`[Worker] Segments collected: ${transcriptSegments.length}`);
-  console.log(`[Worker] full_text length: ${fullText.length}`);
-  console.log(`[Worker] accumulated length: ${accumulated.length}`);
+  console.log(`[Worker] full_text length (from done): ${fullText.length}`);
+  console.log(`[Worker] accumulated length (from segments): ${accumulated.length}`);
+  console.log(`[Worker] Using: ${fullText ? 'full_text (PRIMARY)' : 'accumulated segments (FALLBACK)'}`);
 
   if (!transcript) {
     // Log full details server-side for debugging, but throw a clean user-facing error
     console.error(`[Worker] Could not extract transcript from response.`);
     console.error(`[Worker] Content-Type: ${contentType}`);
-    console.error(`[Worker] Segments collected: ${transcriptSegments.length}`);
-    console.error(`[Worker] full_text length: ${fullText.length}`);
-    console.error(`[Worker] Full raw response (first 1500 chars):\n${rawText.substring(0, 1500)}`);
-    // Clean error message — do NOT include raw SSE body (it causes JSON parse errors on client)
+    console.error(`[Worker] Full raw response (first 2000 chars):\n${rawText.substring(0, 2000)}`);
     throw new Error(
       `Gagal mengekstrak transkrip dari video. ` +
       `Pastikan video memiliki audio yang jelas dan URL valid. ` +
-      `(segments: ${transcriptSegments.length}, content-type: ${contentType.substring(0, 50)})`
+      `(segments: ${transcriptSegments.length}, full_text: ${fullText.length} chars)`
     );
   }
 
-  console.log(`[Worker] Extracted transcript (${transcript.length} chars): ${transcript.substring(0, 100)}...`);
+  console.log(`[Worker] Extracted transcript (${transcript.length} chars): "${transcript.substring(0, 120)}..."`);
   return transcript;
 }
 

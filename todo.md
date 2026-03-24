@@ -69,3 +69,7 @@
 
 - [x] BUG: SSE /api/generate/[jobId]/stream — failed event mengirim raw SSE text sebagai JSON, client gagal parse
 - [x] BUG: Worker error message mengandung raw SSE text dari transcription API
+
+## Bug Fix — Transcription API Format (Round 9)
+
+- [x] FIX: Sesuaikan transcribeVideo() dengan format SSE API yang sebenarnya (event: progress, transcript, done)
