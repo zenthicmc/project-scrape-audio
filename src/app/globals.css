@@ -40,7 +40,7 @@
 
   /* ── Light Mode ── */
   .light {
-    --background: 0 0% 98%;
+    --background: 0 0% 99%;
     --foreground: 222 47% 10%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 10%;
@@ -48,25 +48,27 @@
     --popover-foreground: 222 47% 10%;
     --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 94%;
+    /* Lighter secondary/muted — less gray, more white-tinted */
+    --secondary: 220 20% 97%;
     --secondary-foreground: 222 47% 20%;
-    --muted: 220 14% 94%;
+    --muted: 220 20% 97%;
     --muted-foreground: 215 16% 47%;
     --accent: 262 83% 58%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 88%;
-    --input: 220 14% 94%;
+    --border: 220 13% 91%;
+    /* Input: near-white with very subtle tint — not gray */
+    --input: 220 20% 97%;
     --ring: 262 83% 58%;
     --radius: 0.625rem;
-    --sidebar: 0 0% 98%;              /* same as --background */
+    --sidebar: 0 0% 99%;              /* same as --background */
     --sidebar-foreground: 222 47% 10%; /* same as --foreground */
     --sidebar-primary: 262 83% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 94%;     /* same as --secondary */
+    --sidebar-accent: 220 20% 97%;     /* same as --secondary */
     --sidebar-accent-foreground: 222 47% 20%;
-    --sidebar-border: 220 13% 88%;     /* same as --border */
+    --sidebar-border: 220 13% 91%;     /* same as --border */
     --sidebar-ring: 262 83% 58%;
   }
 }

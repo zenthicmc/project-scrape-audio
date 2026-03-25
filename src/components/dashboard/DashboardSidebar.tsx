@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Instagram, Music2, Youtube, Linkedin, Sparkles, Menu, X, LayoutDashboard } from "lucide-react";
-import { useState } from "react";
+import { Instagram, Music2, Youtube, Linkedin, Sparkles, Menu, X, LayoutDashboard, Zap, CreditCard } from "lucide-react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -11,6 +11,23 @@ export default function DashboardSidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { t } = useLanguage();
+  const [credits, setCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchCredits = async () => {
+      try {
+        const res = await fetch("/api/credits");
+        if (res.ok) {
+          const data = await res.json();
+          setCredits(data.balance);
+        }
+      } catch {}
+    };
+    fetchCredits();
+    // Refresh every 30s in case user just generated a script
+    const interval = setInterval(fetchCredits, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const PLATFORM_ITEMS = [
     { href: "/dashboard/instagram", icon: Instagram, label: "Instagram" },
@@ -73,15 +90,34 @@ export default function DashboardSidebar() {
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-border shrink-0">
-        <div className="bg-secondary rounded-xl p-3">
-          <p className="text-xs font-medium text-foreground mb-0.5">
-            {t("common.appName")}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {t("common.appName")} v1.0
-          </p>
+      {/* Footer — Credits + version */}
+      <div className="p-4 border-t border-border shrink-0 space-y-2">
+        {/* Credit balance card */}
+        <Link
+          href="/dashboard/billing"
+          onClick={() => setMobileOpen(false)}
+          className="flex items-center justify-between px-3 py-2.5 bg-primary/10 border border-primary/20 rounded-xl hover:bg-primary/20 transition-colors group"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
+              <Zap className="w-3.5 h-3.5 text-primary" />
+            </div>
+            <div>
+              <p className="text-[11px] text-muted-foreground leading-none mb-0.5">
+                {t("dashboard.topbar.credits")}
+              </p>
+              <p className="text-sm font-bold text-primary leading-none">
+                {credits !== null ? credits.toLocaleString() : "—"}
+              </p>
+            </div>
+          </div>
+          <CreditCard className="w-3.5 h-3.5 text-primary/50 group-hover:text-primary transition-colors shrink-0" />
+        </Link>
+
+        {/* App version */}
+        <div className="px-3 py-2 bg-secondary rounded-xl">
+          <p className="text-xs font-medium text-foreground">{t("common.appName")}</p>
+          <p className="text-xs text-muted-foreground">v1.0</p>
         </div>
       </div>
     </div>

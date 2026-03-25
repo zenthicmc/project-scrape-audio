@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
-import { Bell, Zap, ChevronDown, LogOut, Settings, CheckCheck, History, CreditCard } from "lucide-react";
+import { Bell, ChevronDown, LogOut, Settings, CheckCheck, History, CreditCard } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -25,23 +25,12 @@ interface Notification {
 
 export default function DashboardTopbar({ user }: TopbarProps) {
   const { t, language } = useLanguage();
-  const [credits, setCredits] = useState<number | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifs, setShowNotifs] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
-
-  const fetchCredits = async () => {
-    try {
-      const res = await fetch("/api/credits");
-      if (res.ok) {
-        const data = await res.json();
-        setCredits(data.balance);
-      }
-    } catch {}
-  };
 
   const fetchNotifications = async () => {
     try {
@@ -55,12 +44,8 @@ export default function DashboardTopbar({ user }: TopbarProps) {
   };
 
   useEffect(() => {
-    fetchCredits();
     fetchNotifications();
-    const interval = setInterval(() => {
-      fetchCredits();
-      fetchNotifications();
-    }, 15000);
+    const interval = setInterval(fetchNotifications, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -95,14 +80,6 @@ export default function DashboardTopbar({ user }: TopbarProps) {
       <div className="flex-1" />
 
       <div className="flex items-center gap-2">
-        {/* Credits */}
-        <Link href="/dashboard/billing" className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors">
-          <Zap className="w-3.5 h-3.5 text-primary" />
-          <span className="text-sm font-semibold text-primary">
-            {credits !== null ? credits : "..."} {t("dashboard.topbar.credits")}
-          </span>
-        </Link>
-
         {/* Language Toggle */}
         <LanguageToggle size="sm" />
 
