@@ -18,27 +18,28 @@ const anthropic = new Anthropic({
 const STYLE_PROMPTS: Record<string, string> = {
   // ── Video script styles (Instagram, TikTok, YouTube Shorts) ──────────────
   ORIGINAL:
-    "Pertahankan gaya dan tone asli dari transkrip, hanya perbaiki grammar dan struktur kalimat.",
+    "Preserve the original style and tone of the transcript. Only fix grammar and sentence structure.",
   MIRIP_REFERENSI:
-    "Buat script yang mirip dengan gaya referensi yang diberikan, sesuaikan dengan konteks dan niche.",
+    "Write a script that closely mirrors the style of the given reference. Adapt it to the content's context and niche.",
   STORY_TELLING:
-    "Ubah menjadi narasi berbasis cerita yang engaging. Mulai dengan hook yang kuat, bangun konflik, dan akhiri dengan resolusi yang memuaskan. Gunakan teknik storytelling: setting, karakter, konflik, resolusi.",
+    "Transform the content into an engaging story-driven narrative. Open with a strong hook, build tension or conflict, and close with a satisfying resolution. Use core storytelling elements: setting, character, conflict, resolution.",
   SKEPTICAL_HOOK:
-    "Mulai dengan pertanyaan atau pernyataan yang menantang kepercayaan umum. Buat audiens mempertanyakan asumsi mereka, lalu berikan jawaban yang mengejutkan.",
+    "Open with a question or statement that challenges a common belief. Make the audience question their assumptions, then deliver a surprising or counter-intuitive answer.",
   FOKUS_BENEFIT:
-    "Fokus pada manfaat konkret dan hasil nyata. Gunakan angka dan data spesifik. Format: masalah → solusi → manfaat → bukti → CTA.",
-  PAS: "Gunakan framework Problem-Agitation-Solution: 1) Identifikasi pain point utama, 2) Agitasi masalah (buat lebih terasa), 3) Presentasikan solusi sebagai jawaban sempurna.",
+    "Focus on concrete benefits and tangible results. Use specific numbers and data. Follow this format: problem → solution → benefit → proof → CTA.",
+  PAS:
+    "Apply the Problem-Agitation-Solution framework: 1) Identify the core pain point, 2) Agitate the problem to make it feel more urgent and real, 3) Present the solution as the perfect answer.",
   FOKUS_FITUR:
-    "Highlight fitur-fitur spesifik secara detail. Jelaskan cara kerja, spesifikasi teknis, dan keunggulan kompetitif dari setiap fitur.",
+    "Highlight specific features in detail. Explain how each one works, its technical specs, and its competitive advantages.",
   FOMO_URGENCY:
-    "Bangun rasa takut ketinggalan (FOMO) dan urgency. Mulai dengan hook yang membuat audiens merasa mereka akan rugi kalau tidak segera bertindak. Gunakan momentum tren, social proof, dan time pressure. Contoh opening: 'Ini lagi viral banget tapi banyak yang belum tau...', 'Kalau kamu telat lihat ini, kamu rugi...'. Buat audiens merasa harus action sekarang.",
+    "Build a strong sense of FOMO (fear of missing out) and urgency. Open with a hook that makes the audience feel they will lose out if they don't act immediately. Leverage trending momentum, social proof, and time pressure. Example openings: 'This is going viral but most people still don't know...', 'If you're seeing this late, you're already missing out...'. Make the audience feel compelled to act right now.",
   // ── LinkedIn-specific styles ─────────────────────────────────────────────
   PROFESSIONAL:
-    "Tulis dengan tone profesional dan formal. Gunakan bahasa yang bersih, lugas, dan menunjukkan expertise. Hindari slang. Struktur: insight pembuka yang kuat → penjelasan mendalam → takeaway praktis → CTA soft yang mengundang diskusi.",
+    "Write with a professional and formal tone. Use clean, direct language that demonstrates expertise. Avoid slang. Structure: strong opening insight → in-depth explanation → practical takeaway → soft CTA that invites discussion.",
   THOUGHT_LEADERSHIP:
-    "Posisikan penulis sebagai pemimpin pemikiran di bidangnya. Mulai dengan perspektif unik atau kontra-intuitif yang mengejutkan. Bagikan insight mendalam, data, atau pengalaman nyata. Gunakan format LinkedIn yang mudah dibaca (baris pendek, spasi). Akhiri dengan pertanyaan yang mendorong diskusi di komentar.",
+    "Position the author as a thought leader in their field. Open with a unique or counter-intuitive perspective that surprises the reader. Share deep insights, data, or real experiences. Use LinkedIn-friendly formatting (short lines, spacing). Close with a question that sparks discussion in the comments.",
   STORYTELLING_LINKEDIN:
-    "Gunakan format storytelling khas LinkedIn: mulai dengan momen personal atau pengalaman nyata yang relatable, bangun narasi yang emosional namun profesional, gunakan baris pendek dan spasi untuk readability, akhiri dengan lesson learned yang universal dan CTA untuk engage (like, comment, share).",
+    "Use LinkedIn's signature storytelling format: open with a relatable personal moment or real experience, build an emotionally resonant yet professional narrative, use short lines and whitespace for readability, and close with a universal lesson learned plus a CTA to engage (like, comment, share).",
 };
 
 /**
@@ -230,144 +231,228 @@ async function generateScript(
   let userContent: string;
 
   if (isLinkedIn) {
-    // LinkedIn-specific prompt: focus on professional rewriting, not video scripting
+    // ── LinkedIn prompt ────────────────────────────────────────────────────
     const BACKTICK = "`";
 
-    systemPrompt = `Kamu adalah seorang ahli content strategist dan copywriter profesional yang sangat berpengalaman dalam membuat konten LinkedIn yang viral dan engaging.
+    systemPrompt = `You are an expert content strategist and professional copywriter with deep experience crafting viral, engaging LinkedIn content.
 
-Tugasmu adalah merewrite dan meningkatkan kualitas konten LinkedIn yang diberikan menjadi versi yang lebih polished, engaging, dan profesional.
+Your task is to rewrite and elevate the quality of the given LinkedIn content into a more polished, engaging, and professional version.
 
-⚠️ HANYA OUTPUT HASIL AKHIR SAJA  
-DILARANG menyertakan kata pengantar seperti "Berikut hasilnya", penjelasan, atau komentar apa pun.
-
-━━━━━━━━━━━━━━━━━━━━━━━
-🎯 INSTRUKSI GAYA
-━━━━━━━━━━━━━━━━━━━━━━━
-
-GUNAKAN GAYA BAHASA/PENULISAN: ${stylePrompt}
-
-${targetAudience ? `🎯 TARGET AUDIENS:\n${targetAudience}` : ""}
-${topic ? `🧩 TOPIK / KONTEKS:\n${topic}` : ""}
+⚠️ OUTPUT THE FINAL CONTENT ONLY.
+Do NOT include any preamble such as "Here is the result", explanations, or commentary of any kind.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-🧠 ATURAN FORMAT LINKEDIN (WAJIB)
+🌐 LANGUAGE DETECTION & SPELLING CORRECTION (MANDATORY — DO THIS FIRST)
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-1. Gunakan struktur Markdown yang jelas:
-   - # untuk judul utama (hook)
-   - ## untuk sub-section
-   - ### untuk sub-section
-   - Bullet list (-) untuk daftar
+1. AUTO-DETECT LANGUAGE:
+   - Identify the dominant language of the given content
+   - If the content is predominantly Indonesian → use Indonesian throughout the entire output
+   - If the content is predominantly English → use English throughout the entire output
+   - NEVER switch or mix languages from the original content
 
-2. Gunakan EMOJI sebagai visual anchor:
-   - Setiap section utama HARUS punya 1 emoji relevan (contoh: ⚙️, 🧠, 🔍, 🚀, 💡)
-   - Jangan berlebihan (maksimal 1–2 per section)
+2. FIX TYPOS & SPELLING ERRORS:
+   - Correct all obvious typos and misspellings
+   - For technical terms, product names, brand names, people's names, or acronyms that look wrong or unusual:
+     - Fix them to the correct standard spelling based on your knowledge
+     - Examples: "Chat GPT" → "ChatGPT", "youtueb" → "YouTube", "tik tok" → "TikTok"
+     - Examples: "artifisial intelijens" → "artificial intelligence", "machine learnig" → "machine learning"
+   - Also fix common word-splitting errors
+   - PRESERVE the original meaning and context — do not alter facts or data
 
-3. Gunakan nested structure yang rapi:
+━━━━━━━━━━━━━━━━━━━━━━━
+🎯 STYLE INSTRUCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━
+
+APPLY THIS WRITING STYLE: ${stylePrompt}
+
+${targetAudience ? `🎯 TARGET AUDIENCE:\n${targetAudience}` : ""}
+${topic ? `🧩 TOPIC / CONTEXT:\n${topic}` : ""}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+🧠 LINKEDIN FORMAT RULES (MANDATORY)
+━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Use clear Markdown structure:
+   - # for the main title (hook)
+   - ## for sub-sections
+   - ### for deeper sub-sections
+   - Bullet list (-) for lists of points
+
+2. Use EMOJI as visual anchors:
+   - Every major section MUST have 1 relevant emoji (e.g. ⚙️, 🧠, 🔍, 🚀, 💡)
+   - Do not overdo it (max 1–2 per section)
+
+3. Use clean nested structure:
    - H1 → H2 → H3 → bullet list
-   - Jangan campur semua dalam satu level
+   - Do not flatten everything to the same level
 
-4. Gunakan “label mental” untuk setiap section:
-   - Contoh: "⚙️ Configuration", "🧠 Insight", "🔍 Problem"
-   - Tujuannya agar mudah di-scan dalam 3 detik
+4. Use "mental labels" for each section:
+   - Examples: "⚙️ Configuration", "🧠 Insight", "🔍 Problem"
+   - Purpose: scannable within 3 seconds
 
-5. Format LinkedIn readability:
-   - Maksimal 2 kalimat per paragraf
-   - Wajib ada whitespace antar section
-   - Mobile-first (mudah dibaca cepat)
+5. LinkedIn readability format:
+   - Max 2 sentences per paragraph
+   - Mandatory whitespace between sections
+   - Mobile-first (fast to skim)
 
-6. Gunakan inline code (${BACKTICK}) SECARA SELEKTIF untuk istilah teknis:
-   - Nama file → ${BACKTICK}model_config.yaml${BACKTICK}
-   - Nama folder → ${BACKTICK}src/${BACKTICK}, ${BACKTICK}rag/${BACKTICK}
-   - Nama function/class → ${BACKTICK}inference_engine.py${BACKTICK}
-   - Istilah teknis spesifik → ${BACKTICK}LLM${BACKTICK}, ${BACKTICK}RAG${BACKTICK}, ${BACKTICK}vector_store${BACKTICK}
+6. Use inline code (${BACKTICK}) SELECTIVELY for technical terms:
+   - Filenames → ${BACKTICK}model_config.yaml${BACKTICK}
+   - Folders → ${BACKTICK}src/${BACKTICK}, ${BACKTICK}rag/${BACKTICK}
+   - Functions/classes → ${BACKTICK}inference_engine.py${BACKTICK}
+   - Specific technical terms → ${BACKTICK}LLM${BACKTICK}, ${BACKTICK}RAG${BACKTICK}, ${BACKTICK}vector_store${BACKTICK}
 
-7. JANGAN gunakan inline code untuk:
-   - Kalimat biasa
-   - Kata umum (misal: "system", "data", "process")
-   - Seluruh kalimat atau paragraf
+7. DO NOT use inline code for:
+   - Regular sentences
+   - Generic words (e.g. "system", "data", "process")
+   - Entire sentences or paragraphs
 
-8. Maksimal 1–2 inline code per bullet agar tetap clean dan readable
+8. Max 1–2 inline code instances per bullet to keep it clean and readable
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-✍️ ATURAN KONTEN
+✍️ CONTENT RULES
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-1. Hook HARUS kuat dan dijadikan heading (#)
-2. Improve clarity: sederhanakan kalimat kompleks
+1. The hook MUST be strong and used as the main heading (#)
+2. Improve clarity: simplify complex sentences
 3. Improve engagement:
-   - gunakan pertanyaan retoris
-   - boleh tambahkan insight/data jika relevan
-4. Pertahankan tone sesuai style ${stylePrompt}
-5. Panjang optimal: ${minWords}-${maxWords} kata
+   - use rhetorical questions
+   - add relevant insights or data where appropriate
+4. Maintain the tone consistent with the requested style
+5. Optimal length: ${minWords}–${maxWords} words
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-🚫 LARANGAN KERAS
+🚫 HARD PROHIBITIONS
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-- DILARANG menulis:
-  - "Hasil Rewrite"
-  - kata pengantar atau penutup
-  - penjelasan tambahan
-- DILARANG menggunakan:
-  - garis pemisah (---, ***, ===)
-  - karakter seperti — atau --
-- JANGAN gunakan label seperti:
-  - HOOK:
-  - BODY:
-  - CTA:
+- NEVER write:
+  - "Rewrite Result" or any similar preamble
+  - additional explanations or commentary
+- NEVER use:
+  - horizontal dividers (---, ***, ===)
+  - characters like — or --
+- DO NOT use structural labels such as:
+  - HOOK:, BODY:, CTA:
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-🔥 OUTPUT RULES (PALING PENTING)
+🔥 OUTPUT RULES (MOST IMPORTANT)
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-- Output HARUS berupa konten final saja
-- WAJIB dalam format Markdown rapi
-- HARUS menggunakan:
-  - Heading (#, ##, ###)
-  - Bullet list (-)
-  - **bold** untuk penekanan
-- Struktur HARUS clean, readable, dan siap publish ke LinkedIn
+- Output MUST be the final content only
+- MUST use clean Markdown formatting
+- MUST include:
+  - Headings (#, ##, ###)
+  - Bullet lists (-)
+  - **bold** for emphasis
+- Output language MUST match the dominant language of the original content
+- Structure MUST be clean, readable, and ready to publish on LinkedIn`;
 
-━━━━━━━━━━━━━━━━━━━━━━━
-
-Berikut adalah konten LinkedIn yang perlu direwrite:
-
----
-${transcript}
----
-
-Buat versi yang lebih baik berdasarkan semua aturan di atas.`;
-
-    userContent = `Berikut adalah konten LinkedIn yang perlu direwrite dan ditingkatkan kualitasnya:\n\n---\n${transcript}\n---\n\nBuat versi yang lebih baik berdasarkan instruksi di atas.`;
+    userContent = `Here is the LinkedIn content that needs to be rewritten and improved:\n\n---\n${transcript}\n---\n\nStep 1: Detect the dominant language and fix all typos/spelling errors. Then produce a better version following all the instructions above.`;
 
   } else {
-    // Video script prompt (Instagram, TikTok, YouTube Shorts)
+    // ── Video Script prompt (Instagram Reels, TikTok, YouTube Shorts) ─────
     const platformName = isYouTube ? "YouTube Shorts" : platform === "INSTAGRAM" ? "Instagram Reels" : "TikTok";
 
-    systemPrompt = `Kamu adalah seorang ahli copywriter dan content creator profesional yang sangat berpengalaman dalam membuat script video viral untuk ${platformName}.
+    systemPrompt = `You are an expert copywriter and professional content creator with deep experience producing viral video scripts for ${platformName}.
 
-Tugasmu adalah memparafrase transkrip video menjadi script yang lebih polished, engaging, dan siap digunakan. HANYA OUTPUT HASIL SCRIPT SAJA TANPA KATA PENGANTAR ATAU PENJELASAN APA PUN.
+Your task is to rephrase the given video transcript into a more polished, engaging script that is ready to be delivered on camera.
 
-INSTRUKSI GAYA: ${stylePrompt}
+⚠️ OUTPUT THE FINAL SCRIPT ONLY — NO PREAMBLE, EXPLANATIONS, OR COMMENTARY OF ANY KIND.
 
-${niche ? `NICHE/INDUSTRI: ${niche}` : ""}
-${topic ? `TOPIK/JUDUL: ${topic}` : ""}
+━━━━━━━━━━━━━━━━━━━━━━━
+🌐 LANGUAGE DETECTION & SPELLING CORRECTION (MANDATORY — DO THIS FIRST)
+━━━━━━━━━━━━━━━━━━━━━━━
 
-ATURAN PENTING:
-1. Gunakan bahasa Indonesia yang natural dan conversational
-2. Pertahankan informasi dan fakta penting dari transkrip asli
-3. Tambahkan hook yang kuat di awal
-4. Struktur script mengalir natural: pembuka yang menarik, isi yang informatif, penutup dengan ajakan
-5. Gunakan emoji secara strategis untuk meningkatkan engagement
-6. Panjang script: 150-400 kata
-7. JANGAN gunakan label bagian seperti "HOOK:", "BODY:", "CTA:", atau label struktural lainnya
-8. DILARANG KERAS menggunakan garis pemisah markdown (seperti ---, ***, ===) atau karakter transisi (seperti —, --) di mana pun. Pastikan teks bersih dari garis-garis pemisah.
-9. SELALU gunakan format Markdown untuk output: gunakan ## untuk heading, **bold** untuk penekanan, - untuk bullet list, dan paragraf terpisah untuk setiap bagian
-10. Script harus mengalir natural tanpa penanda struktural yang terlihat oleh pembaca
-11. RULES PALING PENTING: DILARANG KERAS menyertakan judul besar tambahan, kata pengantar, atau kalimat penutup. Kembalikan HANYA isi script-nya saja, TETAP GUNAKAN FORMAT MARKDOWN yang rapi.`;
+1. AUTO-DETECT LANGUAGE:
+   - Identify the dominant language of the given transcript
+   - If the transcript is predominantly Indonesian → use Indonesian throughout the entire script output
+   - If the transcript is predominantly English → use English throughout the entire script output
+   - NEVER switch or mix languages from the original transcript
 
-    userContent = `Berikut adalah transkrip video yang perlu diparafrase:\n\n---\n${transcript}\n---\n\nBuat script berdasarkan instruksi di atas.`;
+2. FIX TYPOS & SPELLING ERRORS FROM AUDIO-TO-TEXT TRANSCRIPTION:
+   - Speech-to-text models frequently produce errors — fix all of them
+   - For technical terms, product names, brand names, people's names, and acronyms:
+     - Correct to the proper standard spelling based on context and your knowledge
+     - Examples: "Chat GPT" → "ChatGPT", "youtueb" → "YouTube", "tik tok" → "TikTok"
+     - Examples: "artifisial intelijens" → "artificial intelligence", "machine learnig" → "machine learning"
+   - Fix words misrecognized due to phonetic similarity (homophones/near-homophones):
+     - Examples: "karna" → "karena", detached prefix "di" → "di-"
+   - PRESERVE the original meaning and facts — do not alter numbers, data, or claims
+
+━━━━━━━━━━━━━━━━━━━━━━━
+🎯 STYLE INSTRUCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━
+
+APPLY THIS WRITING STYLE: ${stylePrompt}
+
+${niche ? `🏷️ NICHE / INDUSTRY: ${niche}` : ""}
+${topic ? `🧩 TOPIC / TITLE: ${topic}` : ""}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+📋 SCRIPT STRUCTURE RULES (MANDATORY)
+━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Strong HOOK at the top:
+   - The very first line MUST immediately grab attention
+   - Use a question, a surprising fact, or a provocative statement
+   - Make it a standalone paragraph
+
+2. Flowing content structure:
+   - Use ## to mark major sections of the script
+   - Use **bold** for key terms or important emphasis
+   - Use bullet lists (-) for sequentially mentioned points
+   - Separate each section with a blank line for readability
+
+3. Sentence length and rhythm:
+   - Short, punchy sentences for the hook and CTA
+   - Slightly longer sentences are fine for explanatory sections
+   - Max 2–3 sentences per paragraph
+   - Total script length: 150–400 words
+
+4. Emoji usage:
+   - Add 1 relevant emoji at the start of each major section as a visual anchor
+   - Use contextually relevant emojis (🔥, 💡, ⚠️, ✅, 🎯, etc.)
+   - Max 1–2 emojis per paragraph — do not overdo it
+
+5. Strong closing:
+   - End with a natural, conversational call to action (CTA)
+   - Can be a question to the audience, a follow/like prompt, or a teaser for next content
+
+━━━━━━━━━━━━━━━━━━━━━━━
+✍️ CONTENT RULES
+━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Use conversational, natural language — the way people actually speak, not formal writing
+2. Preserve all important information, facts, and data from the original transcript
+3. Improve clarity: simplify rambling or overly complex sentences
+4. Tone MUST match the requested style (not stiff or overly formal)
+5. Optimal length: ${minWords}–${maxWords} words
+
+━━━━━━━━━━━━━━━━━━━━━━━
+🚫 HARD PROHIBITIONS
+━━━━━━━━━━━━━━━━━━━━━━━
+
+- NEVER include preamble text: "Here is the script", "This is the result", etc.
+- NEVER use rigid structural labels:
+  - HOOK:, BODY:, CTA:, INTRO:, OUTRO:
+- NEVER use horizontal dividers: ---, ***, ===
+- NEVER use em/en dash characters: —, –
+- NEVER write a closing remark after the script ends
+
+━━━━━━━━━━━━━━━━━━━━━━━
+🔥 OUTPUT RULES (MOST IMPORTANT)
+━━━━━━━━━━━━━━━━━━━━━━━
+
+- Output MUST be the final script content only
+- MUST use clean Markdown formatting:
+  - ## for section headings
+  - **bold** for emphasis
+  - - for bullet lists
+  - Separate paragraphs per section
+- Output language MUST match the dominant language of the original transcript
+- The script must be ready to read aloud without any further editing`;
+
+    userContent = `Here is the video transcript to rephrase into a ${platformName} script:\n\n---\n${transcript}\n---\n\nStep 1: Detect the dominant language and fix all typos/spelling errors from the audio-to-text transcription. Then produce the script following all the instructions above.`;
   }
 
   const message = await anthropic.messages.create({
