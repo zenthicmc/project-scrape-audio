@@ -2,53 +2,45 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ jobId: string }> }
-) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const { jobId } = await params;
-    const job = await prisma.scriptJob.findFirst({
-      where: { id: jobId, userId: session.user.id },
-    });
-
-    if (!job) return NextResponse.json({ error: "Job tidak ditemukan." }, { status: 404 });
-
-    return NextResponse.json({ job });
-  } catch (error) {
-    console.error("[Job GET]", error);
-    return NextResponse.json({ error: "Terjadi kesalahan server." }, { status: 500 });
-  }
-}
-
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
     const session = await auth();
-    if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const { jobId } = await params;
-    const { generatedScript } = await req.json();
+    const body = await req.json();
 
-    const job = await prisma.scriptJob.findFirst({
-      where: { id: jobId, userId: session.user.id },
-    });
+    if (typeof body.generatedScript !== "string") {
+      return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+    }
 
-    if (!job) return NextResponse.json({ error: "Job tidak ditemukan." }, { status: 404 });
-
-    const updated = await prisma.scriptJob.update({
+    const job = await prisma.scriptJob.findUnique({
       where: { id: jobId },
-      data: { generatedScript },
     });
 
-    return NextResponse.json({ job: updated });
+    if (!job) {
+      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+
+    if (job.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    await prisma.scriptJob.update({
+      where: { id: jobId },
+      data: {
+        generatedScript: body.generatedScript,
+      },
+    });
+
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[Job PATCH]", error);
-    return NextResponse.json({ error: "Terjadi kesalahan server." }, { status: 500 });
+    console.error("[Job PATCH Error]", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

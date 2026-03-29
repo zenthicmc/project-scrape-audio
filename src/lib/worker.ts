@@ -459,7 +459,17 @@ async function processJob(job: Job<ScriptJobData>) {
   try {
     let transcript: string;
 
-    if (platform === "LINKEDIN" && linkedinText && linkedinText.trim().length > 10) {
+    if (job.data.transcript && job.data.transcript.trim().length > 10) {
+      // Reuse existing transcript for regeneration
+      await job.updateProgress(20);
+      console.log(`[Worker] Regenerating: using existing transcript (${job.data.transcript.length} chars)`);
+      transcript = job.data.transcript.trim();
+
+      await prisma.scriptJob.update({
+        where: { id: jobId },
+        data: { transcript },
+      });
+    } else if (platform === "LINKEDIN" && linkedinText && linkedinText.trim().length > 10) {
       // LinkedIn with pasted text — skip transcription, use text directly
       console.log(`[Worker] LinkedIn job: using pasted text (${linkedinText.length} chars)`);
       transcript = linkedinText.trim();

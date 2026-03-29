@@ -39,10 +39,10 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Only allow retry if job is in FAILED status
-    if (originalJob.status !== "FAILED") {
+    // Only allow retry if job is in FAILED or COMPLETED status
+    if (originalJob.status !== "FAILED" && originalJob.status !== "COMPLETED") {
       return NextResponse.json(
-        { error: "Hanya job dengan status FAILED yang bisa di-retry." },
+        { error: "Hanya job dengan status FAILED atau COMPLETED yang bisa diproses ulang." },
         { status: 400 }
       );
     }
@@ -78,6 +78,7 @@ export async function POST(
           status: "PENDING",
           creditsUsed: CREDITS_PER_GENERATION,
           creditRefunded: false,
+          transcript: originalJob.transcript, // Copy transcript to skip scraping
         },
       }),
     ]);
@@ -88,7 +89,7 @@ export async function POST(
         userId: session.user.id,
         amount: -CREDITS_PER_GENERATION,
         type: "USAGE",
-        description: `Retry script ${originalJob.platform} — ${originalJob.style}`,
+        description: `Retry/Regenerate script ${originalJob.platform} — ${originalJob.style}`,
         referenceId: newJob.id,
       },
     });
@@ -98,12 +99,13 @@ export async function POST(
       jobId: newJob.id,
       userId: session.user.id,
       videoUrl: originalJob.videoUrl,
-      platform: originalJob.platform,
+      platform: originalJob.platform as any,
       topic: originalJob.topic ?? undefined,
       niche: originalJob.niche ?? undefined,
       targetAudience: originalJob.targetAudience ?? undefined,
       linkedinText: originalJob.linkedinText ?? undefined,
       style: originalJob.style,
+      transcript: originalJob.transcript ?? undefined,
     });
 
     return NextResponse.json({ jobId: newJob.id, success: true });
@@ -112,3 +114,4 @@ export async function POST(
     return NextResponse.json({ error: "Terjadi kesalahan server." }, { status: 500 });
   }
 }
+

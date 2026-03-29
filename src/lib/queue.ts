@@ -59,6 +59,7 @@ export interface ScriptJobData {
   targetAudience?: string;   // LinkedIn: target audience
   linkedinText?: string;     // LinkedIn: pasted text (alternative to URL)
   style: string;
+  transcript?: string;
 }
 
 // ─── Add job to the correct platform queue ────────────────────────────────────

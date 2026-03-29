@@ -6,7 +6,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
   Loader2, CheckCircle, XCircle,
-  RefreshCw, ArrowLeft, Zap, Sparkles, FileText, Brain, Check
+  RefreshCw, ArrowLeft, Zap, Sparkles, FileText, Brain, Check, Save
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
@@ -94,6 +94,9 @@ export default function ProcessingPage() {
   const [status, setStatus] = useState<ProcessingStatus>("idle");
   const [streamedText, setStreamedText] = useState("");
   const [finalScript, setFinalScript] = useState("");
+  const [editedScript, setEditedScript] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [jobMeta, setJobMeta] = useState<JobMeta>({});
   const [error, setError] = useState("");
   const [isRetrying, setIsRetrying] = useState(false);
@@ -179,6 +182,7 @@ export default function ProcessingPage() {
       }
       const script = data.script as string;
       setFinalScript(script);
+      setEditedScript(script);
       setStreamedText(script);
       setStatus("completed");
       es.close();
@@ -236,15 +240,40 @@ export default function ProcessingPage() {
     }
   };
 
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveSuccess(false);
+    try {
+      const res = await fetch(`/api/jobs/${jobId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ generatedScript: editedScript }),
+      });
+      if (res.ok) {
+        setSaveSuccess(true);
+        setFinalScript(editedScript); // Sync the saved state
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const STEPS = buildSteps(stepMode);
   const currentStepIndex = getStepIndex(status);
   const isActive = status !== "completed" && status !== "failed" && status !== "timeout";
   const hasOutput = streamedText.length > 0;
+
+  const currentText = editedScript || finalScript || streamedText;
+  const wordCount = currentText.trim() ? currentText.trim().split(/\s+/).length : 0;
+
   const platformLabel =
     jobMeta.platform === "INSTAGRAM" ? "Instagram" :
-    jobMeta.platform === "TIKTOK" ? "TikTok" :
-    jobMeta.platform === "YOUTUBE" ? "YouTube Shorts" :
-    jobMeta.platform === "LINKEDIN" ? "LinkedIn" : "";
+      jobMeta.platform === "TIKTOK" ? "TikTok" :
+        jobMeta.platform === "YOUTUBE" ? "YouTube Shorts" :
+          jobMeta.platform === "LINKEDIN" ? "LinkedIn" : "";
   const isEditable = status === "completed";
 
   return (
@@ -340,8 +369,8 @@ export default function ProcessingPage() {
               <div className="grid grid-cols-4">
                 {STEPS.map((step, i) => {
                   const Icon = step.icon;
-                  const isDone = i < currentStepIndex;
-                  const isCurrent = i === currentStepIndex;
+                  const isDone = status === "completed" || i < currentStepIndex;
+                  const isCurrent = status !== "completed" && i === currentStepIndex;
                   return (
                     <div key={step.key} className="relative z-10 flex flex-col items-center gap-2">
                       <div className={cn(
@@ -429,6 +458,7 @@ export default function ProcessingPage() {
                 content={finalScript || streamedText}
                 streamingContent={status === "streaming" ? streamedText : undefined}
                 editable={isEditable}
+                onChange={(val) => setEditedScript(val)}
                 placeholder={language === "id" ? "Script akan muncul di sini..." : "Script will appear here..."}
               />
 
@@ -442,23 +472,44 @@ export default function ProcessingPage() {
 
           {/* Footer */}
           {status === "completed" && (
-            <div className="px-5 py-4 border-t border-border bg-secondary/30 flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">
-                {language === "id"
-                  ? "Script disimpan di History. Anda bisa akses kapan saja."
-                  : "Script saved to History. You can access it anytime."}
-              </p>
-              <button
-                onClick={handleRetry}
-                disabled={isRetrying}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-border rounded-lg hover:bg-secondary transition-colors disabled:opacity-60"
-              >
-                {isRetrying
-                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  : <RefreshCw className="w-3.5 h-3.5" />
-                }
-                {language === "id" ? "Regenerate" : "Regenerate"}
-              </button>
+            <div className="px-5 py-4 border-t border-border bg-secondary/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {language === "id"
+                    ? "Script disimpan di History. Anda bisa akses kapan saja."
+                    : "Script saved to History. You can access it anytime."}
+                </p>
+                <p className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5" />
+                  {wordCount} {language === "id" ? "kata" : "words"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  onClick={handleRetry}
+                  disabled={isRetrying}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-border rounded-lg hover:bg-secondary transition-colors disabled:opacity-60"
+                >
+                  {isRetrying
+                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    : <RefreshCw className="w-3.5 h-3.5" />
+                  }
+                  {language === "id" ? "Regenerate" : "Regenerate"}
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving || !editedScript || editedScript === finalScript}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-60"
+                >
+                  {isSaving
+                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    : saveSuccess
+                      ? <Check className="w-3.5 h-3.5" />
+                      : <Save className="w-3.5 h-3.5" />
+                  }
+                  {saveSuccess ? (language === "id" ? "Tersimpan" : "Saved") : (language === "id" ? "Simpan Perubahan" : "Save Changes")}
+                </button>
+              </div>
             </div>
           )}
         </div>
