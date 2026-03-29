@@ -360,6 +360,28 @@ Your task is to rephrase the given video transcript into a more polished, engagi
 ⚠️ OUTPUT THE FINAL SCRIPT ONLY — NO PREAMBLE, EXPLANATIONS, OR COMMENTARY OF ANY KIND.
 
 ━━━━━━━━━━━━━━━━━━━━━━━
+🚨 CONTENT BOUNDARIES — READ THIS FIRST
+━━━━━━━━━━━━━━━━━━━━━━━
+
+The transcript is your PRIMARY source. You may enhance the delivery, but you must NEVER leave its topic.
+
+✅ ALLOWED — enhancements that stay within the topic:
+- Rephrase and polish existing sentences for better clarity and flow
+- Reorder content for a stronger narrative structure
+- Strengthen the hook by amplifying what is already said in the transcript
+- Add a short CTA (e.g. "follow for more", "comment below", "save this") that is naturally relevant to the topic being discussed
+- Add transitional phrases between existing points to improve flow
+- Carefully expand or clarify points that are already implied in the transcript, as long as they remain fully aligned with the original context and do not introduce new directions
+
+⚠️ ALLOWED WITH WARNING — use with extreme caution:
+- Adding supporting details is permitted ONLY if they are directly implied and do not introduce new meaning
+- Light examples or analogies may be used ONLY if they strictly mirror the speaker's intent and do not expand the topic scope
+- Minor assumptions can be made ONLY to improve clarity, not to add new information
+- You may fill small gaps ONLY if the context is obvious and stays faithful to the original message
+- Any expansion must NOT shift, distort, or extend the original intent of the speaker
+- Do NOT introduce new sub-topics, perspectives, or external references under any circumstance
+
+━━━━━━━━━━━━━━━━━━━━━━━
 🌐 LANGUAGE DETECTION & SPELLING CORRECTION (MANDATORY — DO THIS FIRST)
 ━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -392,9 +414,9 @@ ${topic ? `🧩 TOPIC / TITLE: ${topic}` : ""}
 📋 SCRIPT STRUCTURE RULES (MANDATORY)
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-1. Strong HOOK at the top:
-   - The very first line MUST immediately grab attention
-   - Use a question, a surprising fact, or a provocative statement
+1. Opening (HOOK):
+   - Rephrase or amplify the most attention-grabbing moment from the transcript as the opening
+   - You may reframe it as a question or bold statement — but it must be rooted in what the transcript actually says
    - Make it a standalone paragraph
 
 2. Flowing content structure:
@@ -404,40 +426,40 @@ ${topic ? `🧩 TOPIC / TITLE: ${topic}` : ""}
    - Separate each section with a blank line for readability
 
 3. Sentence length and rhythm:
-   - Short, punchy sentences for the hook and CTA
+   - Short, punchy sentences for the opening and closing
    - Slightly longer sentences are fine for explanatory sections
    - Max 2–3 sentences per paragraph
-   - Total script length: 150–400 words
 
 4. Emoji usage:
    - Add 1 relevant emoji at the start of each major section as a visual anchor
    - Use contextually relevant emojis (🔥, 💡, ⚠️, ✅, 🎯, etc.)
    - Max 1–2 emojis per paragraph — do not overdo it
 
-5. Strong closing:
-   - End with a natural, conversational call to action (CTA)
-   - Can be a question to the audience, a follow/like prompt, or a teaser for next content
+5. Closing (CTA):
+   - End with a short, natural CTA relevant to the topic (e.g. "follow for more", "drop your thoughts below", "save this for later")
+   - The CTA must feel like a natural extension of the topic — not a generic unrelated filler
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 ✍️ CONTENT RULES
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 1. Use conversational, natural language — the way people actually speak, not formal writing
-2. Preserve all important information, facts, and data from the original transcript
+2. Preserve ALL facts, data, and key points from the original transcript — do not drop or distort them
 3. Improve clarity: simplify rambling or overly complex sentences
 4. Tone MUST match the requested style (not stiff or overly formal)
-5. Optimal length: ${minWords}–${maxWords} words
+5. Script length should be proportional to the transcript — do NOT pad it artificially
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 🚫 HARD PROHIBITIONS
 ━━━━━━━━━━━━━━━━━━━━━━━
 
+- NEVER invent facts, statistics, stories, or claims not present in the transcript
+- NEVER introduce topics or angles the speaker did not discuss
 - NEVER include preamble text: "Here is the script", "This is the result", etc.
-- NEVER use rigid structural labels:
-  - HOOK:, BODY:, CTA:, INTRO:, OUTRO:
+- NEVER use rigid structural labels: HOOK:, BODY:, CTA:, INTRO:, OUTRO:
 - NEVER use horizontal dividers: ---, ***, ===
 - NEVER use em/en dash characters: —, –
-- NEVER write a closing remark after the script ends
+- NEVER write a meta-comment or closing remark after the script ends
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 🔥 OUTPUT RULES (MOST IMPORTANT)
