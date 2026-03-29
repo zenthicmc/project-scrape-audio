@@ -91,7 +91,7 @@ export default function DashboardPage() {
         {/* YouTube Shorts */}
         <Link href="/dashboard/youtube" className="group relative bg-card border border-border rounded-2xl p-6 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/5">
           <span className="absolute top-4 right-4 px-2 py-0.5 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold rounded-full uppercase tracking-wide">New</span>
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center mb-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-700 to-red-500 flex items-center justify-center mb-4">
             <Youtube className="w-6 h-6 text-white" />
           </div>
           <h2 className="font-bold text-lg mb-2">{t("nav.youtube")}</h2>

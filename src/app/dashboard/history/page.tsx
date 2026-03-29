@@ -146,16 +146,15 @@ function HistoryContent() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3 min-w-0">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                        job.platform === "INSTAGRAM" ? "bg-gradient-to-br from-purple-500 to-pink-500" :
-                        job.platform === "TIKTOK" ? "bg-gradient-to-br from-cyan-500 to-blue-500" :
-                        job.platform === "YOUTUBE" ? "bg-gradient-to-br from-red-500 to-orange-500" :
-                        "bg-gradient-to-br from-blue-600 to-blue-800"
-                      }`}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${job.platform === "INSTAGRAM" ? "bg-gradient-to-br from-purple-500 to-pink-500" :
+                          job.platform === "TIKTOK" ? "bg-gradient-to-br from-cyan-500 to-blue-500" :
+                            job.platform === "YOUTUBE" ? "bg-gradient-to-br from-red-700 to-red-500" :
+                              "bg-gradient-to-br from-blue-600 to-blue-800"
+                        }`}>
                         {job.platform === "INSTAGRAM" ? <Instagram className="w-4 h-4 text-white" /> :
-                         job.platform === "TIKTOK" ? <Video className="w-4 h-4 text-white" /> :
-                         job.platform === "YOUTUBE" ? <Youtube className="w-4 h-4 text-white" /> :
-                         <Linkedin className="w-4 h-4 text-white" />}
+                          job.platform === "TIKTOK" ? <Video className="w-4 h-4 text-white" /> :
+                            job.platform === "YOUTUBE" ? <Youtube className="w-4 h-4 text-white" /> :
+                              <Linkedin className="w-4 h-4 text-white" />}
                       </div>
                       <div className="min-w-0">
                         <p className="font-medium text-sm truncate">

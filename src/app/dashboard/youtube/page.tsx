@@ -19,7 +19,7 @@ export default async function YouTubeScraperPage() {
       <div className="relative overflow-hidden bg-gradient-to-br from-red-500/10 via-rose-500/5 to-transparent border border-red-500/20 rounded-2xl p-6">
         <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-red-500/10 to-rose-500/10 rounded-full blur-2xl pointer-events-none" />
         <div className="relative flex items-start gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shrink-0">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-700 to-red-500 flex items-center justify-center shadow-lg shrink-0">
             <Youtube className="w-7 h-7 text-white" />
           </div>
           <div className="flex-1 min-w-0">
